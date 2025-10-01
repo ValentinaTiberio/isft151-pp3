@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>RescatePet - Login</title>
+</head>
+<body>
+  <h1>Login RescatePet</h1>
+  <form id="loginForm">
+    <input type="email" id="email" placeholder="Email" required><br>
+    <input type="password" id="password" placeholder="Contraseña" required><br>
+    <button type="submit">Ingresar</button>
+  </form>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      const res = await fetch("http://127.0.0.1:5000/api/users/login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({email, password})
+      });
+      const data = await res.json();
+      console.log(data);
+
+      if (data.token) {
+        alert("Login exitoso, token: " + data.token);
+      } else {
+        alert("Error: " + data.error);
+      }
+    });
+  </script>
+</body>
+</html>

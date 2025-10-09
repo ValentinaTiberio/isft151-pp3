@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>RescatePet - Inicio</title>
+</head>
+<body>
+  <h1>🐾 Bienvenido a RescatePet</h1>
+  <button id="logoutBtn">Cerrar sesión</button>
+
+  <hr>
+  <h2>Registrar nuevo animal</h2>
+  <animal-form></animal-form>
+
+  <h2>Lista de animales rescatados</h2>
+  <animal-list></animal-list>
+
+  <script type="module">
+    import './components/animal-form.js';
+    import './components/animal-list.js';
+
+    // Verificar si hay token
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Debes iniciar sesión");
+      window.location.href = "/";
+    }
+
+    // Cerrar sesión
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("token");
+      window.location.href = "/";
+    });
+  </script>
+</body>
+</html>

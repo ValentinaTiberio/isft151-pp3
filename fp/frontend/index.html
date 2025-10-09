@@ -34,7 +34,7 @@
   <div id="tokenBox">Token: (aún no logueado)</div>
 
   <script>
-    // 📌 Registro
+    // Registro
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const username = document.getElementById("reg_username").value;
@@ -50,7 +50,7 @@
       alert("Usuario registrado: " + data.username);
     });
 
-    // 📌 Login
+    // Login
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const email = document.getElementById("login_email").value;
@@ -64,9 +64,11 @@
       const data = await res.json();
 
       if (data.token) {
-        localStorage.setItem("token", data.token); // guardamos el token
-        document.getElementById("tokenBox").textContent = "Token: " + data.token;
-        alert("Login exitoso!");
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+          alert("Login exitoso ✅");
+          window.location.href = "/inicio";
+        }
       } else {
         alert("Error: " + data.error);
       }

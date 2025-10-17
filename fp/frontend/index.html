@@ -81,6 +81,12 @@
 <body>
   <h1><span class="rescate">RESCATE</span><span class="pet">PET</span></h1>
 
+  <div id="mensaje" style="
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  background-color: orange; color: white; padding: 10px 20px;
+  border-radius: 5px; display: none; font-weight: bold;">
+  </div>
+
   <div class="login-container">
     <h2>Iniciar sesión</h2>
     <form id="loginForm">
@@ -109,14 +115,25 @@
       });
 
       const data = await res.json();
-
-      if (data.token) {
+      
+      // Se modifico los alertas para que se salgan de manera automática
+      if (data.token) { 
         localStorage.setItem("token", data.token);
-        alert("Login exitoso ✅");
-        window.location.href = "/animales";
+        mostrarMensaje("Login exitoso ✅");
+        setTimeout(() => {
+          window.location.href = "/animales";
+        }, 1500);
+      } else {
+        mostrarMensaje("Credenciales inválidas ❌");
       } 
-      else {
-      alert("Error: " + data.error);
+
+    function mostrarMensaje(texto) {
+      const msg = document.getElementById("mensaje");
+      msg.textContent = texto;
+      msg.style.display = "block";
+      setTimeout(() => {
+        msg.style.display = "none";
+      }, 3000);
     }
   });
   </script>

@@ -43,6 +43,30 @@
       background-color: #e69500;
     }
 
+    .toolbar {
+      background-color: #fff;
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 10px 0;
+    }
+
+    .toolbar button {
+      background: none;
+      border: none;
+      font-size: 1em;
+      cursor: pointer;
+      font-weight: bold;
+      color: #333;
+      transition: 0.3s;
+    }
+
+    .toolbar button:hover {
+      color: orange;
+      transform: scale(1.05);
+    }
+
     main {
       padding: 30px;
       display: flex;
@@ -131,19 +155,34 @@
     </div>
     <button id="logoutBtn">Cerrar sesión</button>
   </header>
+  
+  <nav class="toolbar">
+    <button onclick="mostrarSeccion('registrar')">Registrar animal</button>
+    <button onclick="mostrarSeccion('encontrados')">Encontrados</button>
+    <button onclick="mostrarSeccion('perdidos')">Perdidos</button>
+  </nav>
 
   <main>
-    <h2>Registrar nuevo animal 🐾</h2>
-    <form id="animalForm" enctype="multipart/form-data">
+    <section id="registrar" style="display:block;">
+    <h2>Registrar nuevo animal</h2>
+      <form id="animalForm" enctype="multipart/form-data">
       <input type="text" id="nombre" placeholder="Nombre del animal" required><br>
       <input type="text" id="especie" placeholder="Especie" required><br>
       <input type="text" id="estado" placeholder="Estado (Rescatado, En tratamiento...)" required><br>
       <input type="file" id="foto" accept="image/*"><br>
       <button type="submit">Registrar</button>
     </form>
+    </section>
 
-    <h2>Animales rescatados 🐕🐈</h2>
-    <div class="galeria" id="galeria"></div>
+    <section id="encontrados" style="display:none;">
+    <h2>Animales encontrados</h2>
+    <p>Aquí se listarán los animales encontrados (por ahora solo el título)</p>
+    </section>
+    
+    <section id="perdidos" style="display:none;">
+    <h2>Animales perdidos</h2>
+    <p>Aquí se listarán los animales reportados como perdidos.</p>
+    </section>
   </main>
 
   <script>
@@ -177,11 +216,12 @@
       });
 
       if (res.ok) {
-        alert("Animal registrado con éxito 🧡");
-        form.reset();
-        loadAnimals();
+        mostrarMensaje("Animal registrado con éxito 🧡");
+        setTimeout(() => {
+          window.location.href = "/animales";
+        }, 1500);
       } else {
-        alert("Error al registrar el animal");
+        mostrarMensaje("Error al registrar animal");
       }
     });
 
@@ -203,6 +243,11 @@
     }
 
     loadAnimals();
+
+    function mostrarSeccion(id) {
+       document.querySelectorAll("main section").forEach(sec => sec.style.display = "none");
+       document.getElementById(id).style.display = "block";
+      }
   </script>
 </body>
 </html>

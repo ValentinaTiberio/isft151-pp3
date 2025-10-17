@@ -1,17 +1,19 @@
-from backend.app.models.user import User
-
-users = []  # simulación de base de datos
+from backend.app.models.user_model import User
+from backend.main import db
+from werkzeug.security import generate_password_hash, check_password_hash
 
 def create_user(data):
-    user = User(len(users) + 1, data["username"], data["email"], data["password"], data.get("role", "user"))
-    users.append(user)
+    hashed_password = generate_password_hash(data["password"])
+    user = User(username=data["username"], email=data["email"], password=hashed_password)
+    db.session.add(user)
+    db.session.commit()
     return user.to_dict()
 
 def authenticate_user(email, password):
-    for u in users:
-        if u.email == email and u.check_password(password):
-            return u
+    user = User.query.filter_by(email=email).first()
+    if user and check_password_hash(user.password, password):
+        return user
     return None
 
 def list_users():
-    return [u.to_dict() for u in users]
+    return [u.to_dict() for u in User.query.all()]

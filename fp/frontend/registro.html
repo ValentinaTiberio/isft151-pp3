@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>RescatePET - Iniciar sesión</title>
+  <title>RescatePET - Registro</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -20,22 +20,15 @@
       margin-bottom: 20px;
     }
 
-    .rescate {
-      color: black;
-      font-weight: bold;
-    }
+    .rescate { color: black; font-weight: bold; }
+    .pet { color: orange; font-weight: bold; }
 
-    .pet {
-      color: orange;
-      font-weight: bold;
-    }
-
-    .login-container {
+    .register-container {
       background-color: white;
       padding: 30px;
       border-radius: 15px;
       box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-      width: 300px;
+      width: 320px;
       text-align: center;
     }
 
@@ -58,22 +51,20 @@
       font-weight: bold;
     }
 
-    button:hover {
-      background-color: #e69500;
-    }
+    button:hover { background-color: #e69500; }
 
-    .register-link {
+    .login-link {
       margin-top: 15px;
       font-size: 0.9em;
     }
 
-    .register-link a {
+    .login-link a {
       color: orange;
       text-decoration: none;
       font-weight: bold;
     }
 
-    .register-link a:hover {
+    .login-link a:hover {
       text-decoration: underline;
     }
   </style>
@@ -81,44 +72,42 @@
 <body>
   <h1><span class="rescate">RESCATE</span><span class="pet">PET</span></h1>
 
-  <div class="login-container">
-    <h2>Iniciar sesión</h2>
-    <form id="loginForm">
+  <div class="register-container">
+    <h2>Crear cuenta</h2>
+    <form id="registerForm">
+      <input type="text" id="username" placeholder="Nombre de usuario" required><br>
       <input type="email" id="email" placeholder="Email" required><br>
       <input type="password" id="password" placeholder="Contraseña" required><br>
-      <button type="submit">Ingresar</button>
+      <button type="submit">Registrarme</button>
     </form>
 
-    <div class="register-link">
-      ¿Aún no tenés cuenta en <span class="pet">RescatePET</span>?  
-      <a href="/registro">¡Registrate acá!</a>
+    <div class="login-link">
+      ¿Ya tenés cuenta? <a href="/">Iniciá sesión</a>
     </div>
   </div>
 
   <script>
-    const form = document.getElementById("loginForm");
+    const form = document.getElementById("registerForm");
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      const username = document.getElementById("username").value;
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
 
-      const res = await fetch("http://127.0.0.1:5000/api/users/login", {
+      const res = await fetch("http://127.0.0.1:5000/api/users/register", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({email, password})
+        body: JSON.stringify({username, email, password})
       });
 
       const data = await res.json();
-
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        alert("Login exitoso ✅");
-        window.location.href = "/animales";
-      } 
-      else {
-      alert("Error: " + data.error);
-    }
-  });
+      if (data.username) {
+        alert("Registro exitoso ✅ Ahora podés iniciar sesión");
+        window.location.href = "/";
+      } else {
+        alert("Error en el registro");
+      }
+    });
   </script>
 </body>
 </html>

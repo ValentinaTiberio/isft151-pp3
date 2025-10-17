@@ -16,6 +16,10 @@ def create_app():
     def home():
         return send_from_directory(FRONTEND_FOLDER, "index.html")
     
+    @app.route("/registro")
+    def registro_page():
+        return send_from_directory(FRONTEND_FOLDER, "registro.html")
+    
     @app.route("/animales")
     def animales_page():
         return send_from_directory(FRONTEND_FOLDER, "animales.html")

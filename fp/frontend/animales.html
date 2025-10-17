@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>RescatePET - Animales</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .titulo {
+      font-size: 2em;
+      font-weight: bold;
+    }
+
+    .rescate { color: black; }
+    .pet { color: orange; }
+
+    #logoutBtn {
+      background-color: orange;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    #logoutBtn:hover {
+      background-color: #e69500;
+    }
+
+    main {
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    form {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      width: 350px;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    input, select {
+      width: 90%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button[type="submit"] {
+      background-color: orange;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #e69500;
+    }
+
+    .galeria {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      width: 90%;
+    }
+
+    .card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      overflow: hidden;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: scale(1.02);
+    }
+
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .card h3 {
+      margin: 10px 0 0 0;
+    }
+
+    .card p {
+      color: #555;
+      font-size: 0.9em;
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="titulo">
+      <span class="rescate">RESCATE</span><span class="pet">PET</span>
+    </div>
+    <button id="logoutBtn">Cerrar sesión</button>
+  </header>
+
+  <main>
+    <h2>Registrar nuevo animal 🐾</h2>
+    <form id="animalForm" enctype="multipart/form-data">
+      <input type="text" id="nombre" placeholder="Nombre del animal" required><br>
+      <input type="text" id="especie" placeholder="Especie" required><br>
+      <input type="text" id="estado" placeholder="Estado (Rescatado, En tratamiento...)" required><br>
+      <input type="file" id="foto" accept="image/*"><br>
+      <button type="submit">Registrar</button>
+    </form>
+
+    <h2>Animales rescatados 🐕🐈</h2>
+    <div class="galeria" id="galeria"></div>
+  </main>
+
+  <script>
+    // --- Verificación de sesión ---
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Debes iniciar sesión para ver esta página");
+      window.location.href = "/";
+    }
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("token");
+      window.location.href = "/";
+    });
+
+    // --- Registro de animales ---
+    const form = document.getElementById("animalForm");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData();
+      formData.append("nombre", document.getElementById("nombre").value);
+      formData.append("especie", document.getElementById("especie").value);
+      formData.append("estado", document.getElementById("estado").value);
+      const foto = document.getElementById("foto").files[0];
+      if (foto) formData.append("foto", foto);
+
+      const res = await fetch("http://127.0.0.1:5000/api/animals/", {
+        method: "POST",
+        body: formData
+      });
+
+      if (res.ok) {
+        alert("Animal registrado con éxito 🧡");
+        form.reset();
+        loadAnimals();
+      } else {
+        alert("Error al registrar el animal");
+      }
+    });
+
+    // --- Cargar animales ---
+    async function loadAnimals() {
+      const res = await fetch("http://127.0.0.1:5000/api/animals/");
+      const data = await res.json();
+
+      const galeria = document.getElementById("galeria");
+      galeria.innerHTML = data.map(a => `
+        <div class="card">
+          <img src="${a.foto ? `/api/animals/uploads/${a.foto}` : 'https://via.placeholder.com/300x200?text=Sin+foto'}" alt="${a.nombre}">
+          <h3>${a.nombre}</h3>
+          <p><strong>Especie:</strong> ${a.especie}</p>
+          <p><strong>Estado:</strong> ${a.estado}</p>
+          <p><small>Fecha: ${a.fecha_ingreso}</small></p>
+        </div>
+      `).join("");
+    }
+
+    loadAnimals();
+  </script>
+</body>
+</html>

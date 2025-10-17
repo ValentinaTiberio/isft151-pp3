@@ -5,7 +5,7 @@ export class AnimalList extends HTMLElement {
       <h2>Lista de animales</h2>
       <table border="1" cellpadding="5">
         <thead>
-          <tr><th>ID</th><th>Nombre</th><th>Especie</th><th>Estado</th><th>Fecha de ingreso</th></tr>
+          <tr><th>ID</th><th>Foto</th><th>Nombre</th><th>Especie</th><th>Estado</th><th>Fecha ingreso</th></tr>
         </thead>
         <tbody id="tablaAnimales"></tbody>
       </table>
@@ -24,6 +24,7 @@ export class AnimalList extends HTMLElement {
     tbody.innerHTML = data.map(a => `
       <tr>
         <td>${a.id}</td>
+        <td>${a.foto ? `<img src="/api/animals/uploads/${a.foto}" width="80">` : "Sin foto"}</td>
         <td>${a.nombre}</td>
         <td>${a.especie}</td>
         <td>${a.estado}</td>

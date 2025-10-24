@@ -22,8 +22,14 @@ export class AnimalForm extends HTMLElement {
       formData.append("nombre", this.querySelector("#nombre").value);
       formData.append("especie", this.querySelector("#especie").value);
       formData.append("estado", this.querySelector("#estado").value);
-      const foto = this.querySelector("#foto").files[0];
-      if (foto) formData.append("foto", foto);
+
+      const foto = document.getElementById("foto").files[0];
+      if (!foto) {
+        alert("¡Por favor, subí una foto del animal!");
+        return;
+      }
+      formData.append("foto", foto);
+
 
       const res = await fetch("http://127.0.0.1:5000/api/animals/", {
         method: "POST",

@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>RescatePET - Animales</title>
+  <title>RescatePET - Inicio</title>
   <style>
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
@@ -43,13 +43,17 @@
       background-color: #e69500;
     }
 
+    /* ---- barra de herramientas ---- */
     .toolbar {
       background-color: #fff;
       display: flex;
       justify-content: center;
-      gap: 30px;
+      gap: 25px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       padding: 10px 0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .toolbar button {
@@ -72,10 +76,6 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-    }
-
-    h2 {
-      margin-top: 0;
     }
 
     form {
@@ -155,41 +155,54 @@
     </div>
     <button id="logoutBtn">Cerrar sesión</button>
   </header>
-  
+
   <nav class="toolbar">
-    <button onclick="mostrarSeccion('registrar')">Registrar animal</button>
-    <button onclick="mostrarSeccion('encontrados')">Encontrados</button>
-    <button onclick="mostrarSeccion('perdidos')">Perdidos</button>
+    <button onclick="filtrarPor('Encontrado')">Encontrados</button>
+    <button onclick="filtrarPor('Perdido')">Perdidos</button>
+    <button onclick="filtrarPor('En adopción')">En adopción</button>
+    <button onclick="filtrarPor('Tránsito')">Tránsitos</button>
+    <button onclick="mostrarFormulario()">Registrar animal</button>
   </nav>
 
   <main>
-    <section id="registrar" style="display:block;">
-    <h2>Registrar nuevo animal</h2>
+    <section id="formulario" style="display:none;">
+      <h2 style="text-align:center; margin-top: 20px;">Registrar nuevo animal 🐾</h2>
       <form id="animalForm" enctype="multipart/form-data">
-      <input type="text" id="nombre" placeholder="Nombre del animal" required><br>
-      <input type="text" id="especie" placeholder="Especie" required><br>
-      <input type="text" id="estado" placeholder="Estado (Rescatado, En tratamiento...)" required><br>
-      <input type="file" id="foto" accept="image/*"><br>
-      <button type="submit">Registrar</button>
-    </form>
+        <input type="text" id="nombre" placeholder="Nombre del animal" required><br>
+        
+        <!-- Especie como select -->
+         <select id="especie" required>
+          <option value="">Seleccionar especie...</option>
+          <option value="Perro">Perro</option>
+          <option value="Gato">Gato</option>
+          <option value="Otro">Otro</option>
+        </select><br>
+
+        <!-- Estado como select -->
+        <select id="estado" required>
+          <option value="">Seleccionar estado...</option>
+          <option value="Encontrado">Encontrado</option>
+          <option value="Perdido">Perdido</option>
+          <option value="En adopción">En adopción</option>
+          <option value="Tránsito">Busca tránsito</option>
+        </select><br>
+        
+        <input type="file" id="foto" accept="image/*" required><br>
+        
+        <button type="submit">Registrar</button>
+      </form>
     </section>
 
-    <section id="encontrados" style="display:none;">
-    <h2>Animales encontrados</h2>
-    <p>Aquí se listarán los animales encontrados (por ahora solo el título)</p>
-    </section>
-    
-    <section id="perdidos" style="display:none;">
-    <h2>Animales perdidos</h2>
-    <p>Aquí se listarán los animales reportados como perdidos.</p>
+    <section id="galeriaContainer">
+      <h2>Animales registrados</h2>
+      <div class="galeria" id="galeria"></div>
     </section>
   </main>
 
   <script>
-    // --- Verificación de sesión ---
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Debes iniciar sesión para ver esta página");
+      alert("Debes iniciar sesión");
       window.location.href = "/";
     }
 
@@ -198,8 +211,8 @@
       window.location.href = "/";
     });
 
-    // --- Registro de animales ---
     const form = document.getElementById("animalForm");
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -216,38 +229,55 @@
       });
 
       if (res.ok) {
-        mostrarMensaje("Animal registrado con éxito 🧡");
-        setTimeout(() => {
-          window.location.href = "/animales";
-        }, 1500);
+        form.reset();
+        loadAnimals();
+        mostrarGaleria();
       } else {
-        mostrarMensaje("Error al registrar animal");
+        alert("Error al registrar el animal");
       }
     });
 
-    // --- Cargar animales ---
     async function loadAnimals() {
       const res = await fetch("http://127.0.0.1:5000/api/animals/");
       const data = await res.json();
+      window.animales = data;
+      renderGaleria(data);
+    }
 
+    function renderGaleria(data) {
       const galeria = document.getElementById("galeria");
+      if (!data.length) {
+        galeria.innerHTML = "<p>No hay animales registrados.</p>";
+        return;
+      }
       galeria.innerHTML = data.map(a => `
         <div class="card">
           <img src="${a.foto ? `/api/animals/uploads/${a.foto}` : 'https://via.placeholder.com/300x200?text=Sin+foto'}" alt="${a.nombre}">
           <h3>${a.nombre}</h3>
           <p><strong>Especie:</strong> ${a.especie}</p>
           <p><strong>Estado:</strong> ${a.estado}</p>
-          <p><small>Fecha: ${a.fecha_ingreso}</small></p>
+          <p><small>${a.fecha_ingreso}</small></p>
         </div>
       `).join("");
     }
 
-    loadAnimals();
+    function filtrarPor(estado) {
+      mostrarGaleria();
+      const filtrados = window.animales.filter(a => a.estado === estado);
+      renderGaleria(filtrados);
+    }
 
-    function mostrarSeccion(id) {
-       document.querySelectorAll("main section").forEach(sec => sec.style.display = "none");
-       document.getElementById(id).style.display = "block";
-      }
+    function mostrarFormulario() {
+      document.getElementById("formulario").style.display = "block";
+      document.getElementById("galeriaContainer").style.display = "none";
+    }
+
+    function mostrarGaleria() {
+      document.getElementById("formulario").style.display = "none";
+      document.getElementById("galeriaContainer").style.display = "block";
+    }
+
+    loadAnimals();
   </script>
 </body>
 </html>

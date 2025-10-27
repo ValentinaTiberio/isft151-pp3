@@ -199,6 +199,12 @@
     </section>
   </main>
 
+    <section id="solicitudesContainer">
+      <h2>Solicitudes de adopción</h2>
+      <adopcion-list></adopcion-list>
+    </section>
+  </main>
+
   <script>
     const token = localStorage.getItem("token");
     if (!token) {
@@ -257,6 +263,7 @@
           <p><strong>Especie:</strong> ${a.especie}</p>
           <p><strong>Estado:</strong> ${a.estado}</p>
           <p><small>${a.fecha_ingreso}</small></p>
+          ${a.estado === "En adopción" ? `<button class="solicitar" data-id="${a.id}">Solicitar adopción</button>` : ''}
         </div>
       `).join("");
     }
@@ -276,6 +283,30 @@
       document.getElementById("formulario").style.display = "none";
       document.getElementById("galeriaContainer").style.display = "block";
     }
+        // Delegación de eventos para botones de "Solicitar adopción"
+    document.getElementById("galeria").addEventListener("click", async (e) => {
+      if (e.target.classList.contains("solicitar")) {
+        const animalId = e.target.dataset.id;
+        const userId = 1; // Podés reemplazarlo por el ID real del usuario logueado
+
+        const res = await fetch("http://127.0.0.1:5000/api/adopciones/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ animal_id: animalId, user_id: userId })
+        });
+
+        if (res.ok) {
+          alert("Solicitud enviada ✅");
+          // Opcional: actualizar la lista de solicitudes
+          const adopcionList = document.querySelector("adopcion-list");
+          if (adopcionList) adopcionList.loadSolicitudes();
+        } else {
+          alert("Error al enviar la solicitud ❌");
+        }
+      }
+    });
 
     loadAnimals();
   </script>

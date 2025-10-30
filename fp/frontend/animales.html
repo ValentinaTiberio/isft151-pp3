@@ -239,7 +239,11 @@
 
     async function loadAnimals() {
       const res = await fetch("http://127.0.0.1:5000/api/animals/");
-      const data = await res.json();
+      let data = await res.json();
+
+      // Muestra los más recientes primero
+      data.sort((a, b) => new Date(b.fecha_ingreso) - new Date(a.fecha_ingreso));
+
       window.animales = data;
       renderGaleria(data);
     }
@@ -278,6 +282,10 @@
     }
 
     loadAnimals();
+
+    // Actualiza automáticamente la pág cada 10 segundos
+    setInterval(loadAnimals, 10000);
+
   </script>
 </body>
 </html>

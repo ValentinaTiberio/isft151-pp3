@@ -23,3 +23,9 @@ def actualizar(id):
     if actualizada:
         return jsonify(actualizada)
     return jsonify({"error": "Solicitud no encontrada"}), 404
+
+@adopcion_bp.route("/usuario/<int:user_id>", methods=["GET"])
+def listar_por_usuario(user_id):
+    from backend.app.models.adopcion_model import Adopcion
+    solicitudes = Adopcion.query.filter_by(user_id=user_id).all()
+    return jsonify([s.to_dict() for s in solicitudes])

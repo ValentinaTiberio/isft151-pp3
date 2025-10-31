@@ -161,6 +161,8 @@
     <button onclick="filtrarPor('Perdido')">Perdidos</button>
     <button onclick="filtrarPor('En adopción')">En adopción</button>
     <button onclick="filtrarPor('Tránsito')">Tránsitos</button>
+    <button onclick="verTransitos()">Hogares de Tránsito</button>
+    <button onclick="verMisSolicitudes()">Mis Solicitudes</button>
     <button onclick="mostrarFormulario()">Registrar animal</button>
   </nav>
 
@@ -193,6 +195,24 @@
       </form>
     </section>
 
+    <section id="formTransito" style="display:none;">
+      <h2 style="text-align:center; margin-top: 20px;">Asignar animal a hogar de tránsito 🏠</h2>
+      <form id="transitoForm">
+        <select id="animalSelect" required>
+          <option value="">Seleccionar animal...</option>
+        </select><br>
+
+        <select id="userSelect" required>
+          <option value="">Seleccionar usuario...</option>
+        </select><br>
+
+        <button type="submit">Asignar tránsito</button>
+        <button type="button" onclick="verTransitos()" 
+        style="margin-top:10px; background:#ccc; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">
+        🔙 Volver a tránsitos</button>
+      </form>
+    </section>
+
     <section id="galeriaContainer">
       <h2>Animales registrados</h2>
       <div class="galeria" id="galeria"></div>
@@ -208,7 +228,7 @@
   <script>
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Debes iniciar sesión");
+      mostrarMensaje("Debes iniciar sesión");
       window.location.href = "/";
     }
 
@@ -239,7 +259,7 @@
         loadAnimals();
         mostrarGaleria();
       } else {
-        alert("Error al registrar el animal");
+        mostrarMensaje("Error al registrar el animal");
       }
     });
 
@@ -252,18 +272,15 @@
 
     function renderGaleria(data) {
       const galeria = document.getElementById("galeria");
-      if (!data.length) {
-        galeria.innerHTML = "<p>No hay animales registrados.</p>";
-        return;
-      }
       galeria.innerHTML = data.map(a => `
         <div class="card">
-          <img src="${a.foto ? `/api/animals/uploads/${a.foto}` : 'https://via.placeholder.com/300x200?text=Sin+foto'}" alt="${a.nombre}">
+          <img src="${a.foto ? `/api/animals/uploads/${a.foto}` : 'https://via.placeholder.com/300x200'}" alt="${a.nombre}">
           <h3>${a.nombre}</h3>
           <p><strong>Especie:</strong> ${a.especie}</p>
           <p><strong>Estado:</strong> ${a.estado}</p>
-          <p><small>${a.fecha_ingreso}</small></p>
-          ${a.estado === "En adopción" ? `<button class="solicitar" data-id="${a.id}">Solicitar adopción</button>` : ''}
+          <button onclick="solicitarAdopcion(${a.id})" ${a.estado !== "En adopción" ? "disabled" : ""}>
+            ${a.estado === "En adopción" ? "Solicitar adopción" : "No disponible"}
+          </button>
         </div>
       `).join("");
     }
@@ -283,6 +300,25 @@
       document.getElementById("formulario").style.display = "none";
       document.getElementById("galeriaContainer").style.display = "block";
     }
+
+    function mostrarMensaje(msg, tipo = "success") {
+      const div = document.createElement("div");
+      div.textContent = msg;
+      div.style.position = "fixed";
+      div.style.top = "20px";
+      div.style.left = "50%";
+      div.style.transform = "translateX(-50%)";
+      div.style.background = tipo === "success" ? "orange" : "#e74c3c";
+      div.style.color = "white";
+      div.style.padding = "10px 20px";
+      div.style.borderRadius = "10px";
+      div.style.fontWeight = "bold";
+      div.style.zIndex = "9999";
+      div.style.boxShadow = "0 2px 5px rgba(0,0,0,0.2)";
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 3000);
+    }
+
         // Delegación de eventos para botones de "Solicitar adopción"
     document.getElementById("galeria").addEventListener("click", async (e) => {
       if (e.target.classList.contains("solicitar")) {
@@ -298,17 +334,150 @@
         });
 
         if (res.ok) {
-          alert("Solicitud enviada ✅");
+          mostrarMensaje("Solicitud de adopción enviada con éxito!");
           // Opcional: actualizar la lista de solicitudes
           const adopcionList = document.querySelector("adopcion-list");
           if (adopcionList) adopcionList.loadSolicitudes();
         } else {
-          alert("Error al enviar la solicitud ❌");
+          mostrarMensaje("Ya solicitaste este animal ⚠️", "error");
         }
       }
     });
 
+    // 🔹 Mostrar formulario de tránsito
+      function mostrarFormTransito() {
+        document.getElementById("galeriaContainer").style.display = "none";
+        document.getElementById("formTransito").style.display = "block";
+        cargarSelects();
+      }
+
+      // 🔹 Cargar listas de animales y usuarios
+      async function cargarSelects() {
+        // Cargar animales disponibles
+        const resAnimales = await fetch("http://127.0.0.1:5000/api/animals/");
+        const animales = await resAnimales.json();
+        const animalSelect = document.getElementById("animalSelect");
+
+        animalSelect.innerHTML = '<option value="">Seleccionar animal...</option>';
+        animales
+          .filter(a => a.estado !== "Tránsito") // solo los que no están ya en tránsito
+          .forEach(a => {
+            const option = document.createElement("option");
+            option.value = a.id;
+            option.textContent = `${a.nombre} (${a.estado})`;
+            animalSelect.appendChild(option);
+          });
+
+        // Cargar usuarios
+        const resUsuarios = await fetch("http://127.0.0.1:5000/api/users/");
+        const usuarios = await resUsuarios.json();
+        const userSelect = document.getElementById("userSelect");
+
+        userSelect.innerHTML = '<option value="">Seleccionar usuario...</option>';
+        usuarios.forEach(u => {
+          const option = document.createElement("option");
+          option.value = u.id;
+          option.textContent = u.username;
+          userSelect.appendChild(option);
+        });
+      }
+
+      // 🔹 Enviar formulario
+      document.getElementById("transitoForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const animal_id = document.getElementById("animalSelect").value;
+        const user_id = document.getElementById("userSelect").value;
+
+        if (!animal_id || !user_id) {
+          mostrarMensaje("Seleccioná un animal y un usuario", "error");
+          return;
+        }
+
+        const res = await fetch("http://127.0.0.1:5000/api/transitos/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ animal_id, user_id })
+        });
+
+        const data = await res.json();
+
+        if (data.error) {
+          mostrarMensaje("⚠️ " + data.error, "error");
+        } else {
+          mostrarMensaje("🐾 Tránsito asignado con éxito!");
+          document.getElementById("transitoForm").reset();
+          loadAnimals(); // actualiza la galería
+          verTransitos(); // muestra los tránsitos activos
+        }
+      });
+
+    // setInterval(loadAnimals, 10000);
+
     loadAnimals();
+
+    async function verMisSolicitudes() {
+      const userId = localStorage.getItem("user_id");
+      if (!userId) return mostrarMensaje("Debes iniciar sesión primero", "error");
+
+      const res = await fetch(`http://127.0.0.1:5000/api/adopciones/usuario/${userId}`);
+      const data = await res.json();
+
+      const galeria = document.getElementById("galeria");
+      galeria.innerHTML = data.length
+        ? data.map(s => `
+            <div class="card" style="border-top: 5px solid ${
+              s.estado === "Aprobada" ? "green" : s.estado === "Pendiente" ? "orange" : "gray"
+            }">
+              <h3>${s.animal_nombre || "Animal"}</h3>
+              <p><strong>Fecha:</strong> ${s.fecha_solicitud}</p>
+              <p><strong>Estado:</strong> 
+                <span style="color: ${
+                  s.estado === "Aprobada" ? "green" : s.estado === "Pendiente" ? "orange" : "gray"
+                }">${s.estado}</span>
+              </p>
+              <p><strong>Usuario:</strong> ${s.user_nombre || "No especificado"}</p>
+            </div>
+          `).join("")
+        : "<p>No tenés solicitudes todavía</p>";
+    }
+
+    async function verTransitos() {
+      const res = await fetch("http://127.0.0.1:5000/api/transitos/");
+      const data = await res.json();
+
+      const galeria = document.getElementById("galeria");
+      const galeriaContainer = document.getElementById("galeriaContainer");
+      const formulario = document.getElementById("formulario");
+      const formTransito = document.getElementById("formTransito");
+
+      formulario.style.display = "none";
+      galeriaContainer.style.display = "block";
+      formTransito.style.display = "none";
+
+      galeria.innerHTML = `
+        <div style="text-align:center; margin-bottom:20px;">
+          <button onclick="mostrarFormTransito()" 
+                  style="background-color:orange; color:white; border:none; padding:10px 20px; border-radius:5px; font-weight:bold; cursor:pointer;">
+            ➕ Nuevo tránsito
+          </button>
+        </div>
+        ${
+          data.length
+            ? data.map(t => `
+                <div class="card" style="border-top: 5px solid #f39c12;">
+                  <img src="${t.animal_nombre ? `/api/animals/uploads/${t.animal.foto}` : 'https://via.placeholder.com/300x200?text=Animal+en+Tr%C3%A1nsito'}" 
+                      alt="${t.animal_nombre || 'Animal'}">
+                  <h3>${t.animal_nombre || 'Animal'}</h3>
+                  <p><strong>Cuidador:</strong> ${t.user_nombre || 'No especificado'}</p>
+                  <p><strong>Inicio:</strong> ${t.fecha_inicio}</p>
+                  <p><strong>Estado:</strong> ${t.estado}</p>
+                </div>
+              `).join("")
+            : "<p>No hay animales en hogares de tránsito por el momento</p>"
+        }
+      `;
+    }
   </script>
 </body>
 </html>

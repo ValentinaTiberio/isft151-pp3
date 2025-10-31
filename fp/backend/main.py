@@ -2,6 +2,7 @@ from flask import Flask, send_from_directory
 from backend.app.db_config import db
 import os
 
+
 def create_app():
     app = Flask(__name__)
 
@@ -13,8 +14,12 @@ def create_app():
     # Blueprints
     from backend.app.routes.user_routes import user_bp
     from backend.app.routes.animal_routes import animal_bp
+    from backend.app.routes.adopcion_routes import adopcion_bp
+    from backend.app.routes.transito_routes import transito_bp
     app.register_blueprint(user_bp, url_prefix="/api/users")
     app.register_blueprint(animal_bp, url_prefix="/api/animals")
+    app.register_blueprint(adopcion_bp, url_prefix="/api/adopciones")
+    app.register_blueprint(transito_bp, url_prefix="/api/transitos")
 
     # Carpeta frontend
     FRONTEND_FOLDER = os.path.join(os.path.dirname(__file__), "..", "frontend")

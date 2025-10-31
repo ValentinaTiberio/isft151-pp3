@@ -24,8 +24,15 @@ def login():
         SECRET_KEY,
         algorithm="HS256"
     )
-    return jsonify({"token": token})
+
+    #Ahora devolvemos también los datos del usuario logueado
+    return jsonify({
+        "token": token,
+        "user": user.to_dict()
+    })
+
 
 @user_bp.route("/", methods=["GET"])
 def get_users():
     return jsonify(list_users())
+    

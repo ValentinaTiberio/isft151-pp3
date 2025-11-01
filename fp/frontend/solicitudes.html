@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Solicitudes de Adopción - RescatePET</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 span.rescate { color: black; }
+    h1 span.pet { color: orange; }
+
+    button {
+      background-color: orange;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #e69500;
+    }
+
+    main {
+      padding: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: orange;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .estado {
+      font-weight: bold;
+    }
+
+    .Aprobada { color: green; }
+    .Pendiente { color: orange; }
+    .Rechazada { color: gray; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><span class="rescate">RESCATE</span><span class="pet">PET</span></h1>
+    <button onclick="window.location.href='/animales'">Volver</button>
+  </header>
+
+  <main>
+    <h2>Solicitudes de adopción 🐾</h2>
+    <table id="tablaSolicitudes">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Animal</th>
+          <th>Usuario</th>
+          <th>Fecha</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+
+  <script>
+    async function cargarSolicitudes() {
+      const res = await fetch("http://127.0.0.1:5000/api/adopciones/");
+      const data = await res.json();
+
+      const tbody = document.querySelector("#tablaSolicitudes tbody");
+      tbody.innerHTML = data.map(s => `
+        <tr>
+          <td>${s.id}</td>
+          <td>${s.animal_nombre || "—"}</td>
+          <td>${s.user_nombre || "—"}</td>
+          <td>${s.fecha_solicitud}</td>
+          <td class="estado ${s.estado}">${s.estado}</td>
+          <td>
+            <button onclick="actualizarEstado(${s.id}, 'Aprobada')">✅ Aprobar</button>
+            <button onclick="actualizarEstado(${s.id}, 'Rechazada')">❌ Rechazar</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    async function actualizarEstado(id, nuevoEstado) {
+      const res = await fetch(`http://127.0.0.1:5000/api/adopciones/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ estado: nuevoEstado })
+      });
+
+      if (res.ok) {
+        alert("Estado actualizado con éxito ✅");
+        cargarSolicitudes();
+      } else {
+        alert("Error al actualizar el estado ❌");
+      }
+    }
+
+    cargarSolicitudes();
+  </script>
+</body>
+</html>

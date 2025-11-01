@@ -175,7 +175,7 @@
     <button onclick="marcarActivo(this); filtrarPor('En adopción')">En adopción</button>
     <button onclick="marcarActivo(this); filtrarPor('Tránsito')">Tránsitos</button>
     <button onclick="marcarActivo(this); verTransitos()">Hogares de Tránsito</button>
-    <button onclick="marcarActivo(this); verMisSolicitudes()">Mis Solicitudes</button>
+    <button onclick="window.location.href='/solicitudes'">Mis Solicitudes</button>
     <button onclick="marcarActivo(this); mostrarFormulario()">Registrar animal</button>
   </nav>
 
@@ -230,12 +230,7 @@
       <h2>Animales registrados</h2>
       <div class="galeria" id="galeria"></div>
     </section>
-  </main>
 
-    <section id="solicitudesContainer">
-      <h2>Solicitudes de adopción</h2>
-      <adopcion-list></adopcion-list>
-    </section>
   </main>
 
   <script>

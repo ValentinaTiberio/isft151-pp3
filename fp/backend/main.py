@@ -35,6 +35,10 @@ def create_app():
     @app.route("/animales")
     def animales_page():
         return send_from_directory(FRONTEND_FOLDER, "animales.html")
+    
+    @app.route("/solicitudes")
+    def solicitudes_page():
+        return send_from_directory(FRONTEND_FOLDER, "solicitudes.html")
 
     @app.route("/<path:path>")
     def static_files(path):

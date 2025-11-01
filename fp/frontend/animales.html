@@ -83,6 +83,37 @@
       align-items: center;
     }
 
+    /* ---- tarjetas ---- */
+    .galeria {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      width: 90%;
+      justify-items: center;
+    }
+
+    .card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      overflow: hidden;
+      text-align: center;
+      transition: transform 0.2s;
+      width: 250px;
+    }
+
+    .card:hover { transform: scale(1.02); }
+
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .card h3 { margin: 10px 0 0 0; }
+    .card p { color: #555; font-size: 0.9em; margin: 5px 0; }
+
+    /* ---- formularios ---- */
     form {
       background: white;
       padding: 20px;
@@ -90,7 +121,7 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       width: 350px;
       text-align: center;
-      margin-bottom: 40px;
+      margin-top: 20px;
     }
 
     input, select {
@@ -115,50 +146,6 @@
     button[type="submit"]:hover {
       background-color: #e69500;
     }
-
-    .galeria {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 20px;
-      width: 90%;
-    }
-
-    .animales-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center; /* ✅ Centra horizontalmente */
-      gap: 20px;
-      margin-top: 20px;
-    }
-
-    .card {
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      overflow: hidden;
-      text-align: center;
-      transition: transform 0.2s;
-    }
-
-    .card:hover {
-      transform: scale(1.02);
-    }
-
-    .card img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-    }
-
-    .card h3 {
-      margin: 10px 0 0 0;
-    }
-
-    .card p {
-      color: #555;
-      font-size: 0.9em;
-      margin: 5px 0;
-    }
   </style>
 </head>
 <body>
@@ -170,31 +157,33 @@
   </header>
 
   <nav class="toolbar">
-    <button id="inicioBtn" onclick="marcarActivo(this); mostrarInicio()">Inicio</button>
-    <button onclick="marcarActivo(this); filtrarPor('Encontrado')">Encontrados</button>
-    <button onclick="marcarActivo(this); filtrarPor('Perdido')">Perdidos</button>
-    <button onclick="marcarActivo(this); filtrarPor('En adopción')">En adopción</button>
-    <button onclick="marcarActivo(this); filtrarPor('Tránsito')">Tránsitos</button>
-    <button onclick="marcarActivo(this); verTransitos()">Hogares de Tránsito</button>
+    <button id="inicioBtn" onclick="mostrarInicio()">Inicio</button>
+    <button onclick="mostrarFiltro('Encontrado')">Encontrados</button>
+    <button onclick="mostrarFiltro('Perdido')">Perdidos</button>
+    <button onclick="mostrarFiltro('En adopción')">En adopción</button>
+    <button onclick="mostrarFiltro('Tránsito')">Tránsitos</button>
+    <button onclick="mostrarFormulario()">Registrar animal</button>
     <button onclick="window.location.href='/solicitudes'">Mis Solicitudes</button>
-    <button onclick="marcarActivo(this); mostrarFormulario()">Registrar animal</button>
   </nav>
 
   <main>
-    <section id="formulario" style="display:none;">
-      <h2 style="text-align:center; margin-top: 20px;">Registrar nuevo animal 🐾</h2>
+    <!-- 📋 Galería de animales -->
+    <section id="galeriaSection">
+      <h2>Animales registrados</h2>
+      <div id="galeria" class="galeria"></div>
+    </section>
+
+    <!-- 🐾 Formulario de registro -->
+    <section id="formularioSection" style="display:none;">
+      <h2>Registrar nuevo animal 🐾</h2>
       <form id="animalForm" enctype="multipart/form-data">
         <input type="text" id="nombre" placeholder="Nombre del animal" required><br>
-        
-        <!-- Especie como select -->
-         <select id="especie" required>
+        <select id="especie" required>
           <option value="">Seleccionar especie...</option>
           <option value="Perro">Perro</option>
           <option value="Gato">Gato</option>
           <option value="Otro">Otro</option>
         </select><br>
-
-        <!-- Estado como select -->
         <select id="estado" required>
           <option value="">Seleccionar estado...</option>
           <option value="Encontrado">Encontrado</option>
@@ -202,325 +191,144 @@
           <option value="En adopción">En adopción</option>
           <option value="Tránsito">Busca tránsito</option>
         </select><br>
-        
         <input type="file" id="foto" accept="image/*" required><br>
-        
         <button type="submit">Registrar</button>
       </form>
     </section>
-
-    <section id="formTransito" style="display:none;">
-      <h2 style="text-align:center; margin-top: 20px;">Asignar animal a hogar de tránsito 🏠</h2>
-      <form id="transitoForm">
-        <select id="animalSelect" required>
-          <option value="">Seleccionar animal...</option>
-        </select><br>
-
-        <select id="userSelect" required>
-          <option value="">Seleccionar usuario...</option>
-        </select><br>
-
-        <button type="submit">Asignar tránsito</button>
-        <button type="button" onclick="verTransitos()" 
-        style="margin-top:10px; background:#ccc; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">
-        🔙 Volver a tránsitos</button>
-      </form>
-    </section>
-
-    <section id="galeriaContainer">
-      <h2>Animales registrados</h2>
-      <div class="galeria" id="galeria"></div>
-    </section>
-
   </main>
 
   <script>
+    let autoRefresh = null;
+    let animales = [];
+
+    // --- LOGIN CHECK ---
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "/";
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "/";
+    });
+
+    // --- Cargar animales ---
+    async function loadAnimals() {
+      const res = await fetch("/api/animals/");
+      animales = await res.json();
+      animales.sort((a, b) => new Date(b.fecha_ingreso) - new Date(a.fecha_ingreso));
+      renderGaleria(animales);
+    }
+
+    // --- Renderizar ---
+    function renderGaleria(lista) {
+      const galeria = document.getElementById("galeria");
+      galeria.innerHTML = lista.map(a => `
+        <div class="card">
+          <img src="${a.foto ? `/api/animals/uploads/${a.foto}` : 'https://via.placeholder.com/300x200?text=Sin+foto'}" 
+              alt="${a.nombre}">
+          <h3>${a.nombre}</h3>
+          <p><strong>Especie:</strong> ${a.especie}</p>
+          <p><strong>Estado:</strong> ${a.estado}</p>
+
+          ${a.estado === "En adopción" ? `
+            <button class="solicitar" data-id="${a.id}">
+              Solicitar adopción
+            </button>
+          ` : ""}
+        </div>
+      `).join("");
+
+      // Agregar eventos a los botones de solicitud
+      document.querySelectorAll(".solicitar").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+          const animalId = e.target.dataset.id;
+          const userId = localStorage.getItem("user_id");
+
+          if (!userId) {
+            mostrarMensaje("Debes iniciar sesión para enviar una solicitud");
+            return;
+          }
+
+          const res = await fetch("http://127.0.0.1:5000/api/adopciones/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ animal_id: animalId, user_id: userId })
+          });
+
+          const data = await res.json();
+
+          if (res.ok && !data.error) {
+            mostrarMensaje("Solicitud de adopción enviada con éxito");
+          } else {
+            mostrarMensaje(data.error || "Ya solicitaste este animal ⚠️");
+          }
+        });
+      });
+    }
+
+
+    // --- Mostrar inicio ---
+    function mostrarInicio() {
+      marcarActivo(document.getElementById("inicioBtn"));
+      document.getElementById("formularioSection").style.display = "none";
+      document.getElementById("galeriaSection").style.display = "block";
+      clearInterval(autoRefresh);
+      loadAnimals();
+      autoRefresh = setInterval(loadAnimals, 10000);
+    }
+
+    // --- Mostrar filtro ---
+    function mostrarFiltro(estado) {
+      detenerAutoActualizacion();
+      marcarActivoPorTexto(estado);
+      document.getElementById("formularioSection").style.display = "none";
+      document.getElementById("galeriaSection").style.display = "block";
+      const filtrados = animales.filter(a => a.estado === estado);
+      renderGaleria(filtrados);
+    }
+
+    // --- Mostrar formulario ---
+    function mostrarFormulario() {
+      detenerAutoActualizacion();
+      document.getElementById("galeriaSection").style.display = "none";
+      document.getElementById("formularioSection").style.display = "block";
+    }
+
     function marcarActivo(boton) {
       document.querySelectorAll(".toolbar button").forEach(b => b.classList.remove("active"));
       boton.classList.add("active");
     }
 
-    const token = localStorage.getItem("token");
-    if (!token) {
-      mostrarMensaje("Debes iniciar sesión");
-      window.location.href = "/";
-    }
-
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      localStorage.removeItem("token");
-      window.location.href = "/";
-    });
-
-    const form = document.getElementById("animalForm");
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const formData = new FormData();
-      formData.append("nombre", document.getElementById("nombre").value);
-      formData.append("especie", document.getElementById("especie").value);
-      formData.append("estado", document.getElementById("estado").value);
-      const foto = document.getElementById("foto").files[0];
-      if (foto) formData.append("foto", foto);
-
-      const res = await fetch("http://127.0.0.1:5000/api/animals/", {
-        method: "POST",
-        body: formData
+    function marcarActivoPorTexto(texto) {
+      document.querySelectorAll(".toolbar button").forEach(b => {
+        b.classList.remove("active");
+        if (b.textContent.trim() === texto || b.textContent.trim().includes(texto)) b.classList.add("active");
       });
-
-      if (res.ok) {
-        form.reset();
-        loadAnimals();
-        mostrarGaleria();
-      } else {
-        mostrarMensaje("Error al registrar el animal");
-      }
-    });
-
-    async function loadAnimals() {
-      const res = await fetch("http://127.0.0.1:5000/api/animals/");
-      let data = await res.json();
-
-      // Muestra los más recientes primero
-      data.sort((a, b) => new Date(b.fecha_ingreso) - new Date(a.fecha_ingreso));
-
-      window.animales = data;
-      renderGaleria(data);
-    }
-
-    function renderGaleria(data) {
-      const galeria = document.getElementById("galeria");
-      galeria.innerHTML = data.map(a => `
-        <div class="card">
-          <img src="${a.foto ? `/api/animals/uploads/${a.foto}` : 'https://via.placeholder.com/300x200?text=Sin+foto'}"
-          alt="${a.nombre}" style="cursor:pointer;"
-          onclick='verDetallesAnimal(${JSON.stringify(a)})'>
-          <h3>${a.nombre}</h3>
-          <p><strong>Especie:</strong> ${a.especie}</p>
-          <p><strong>Estado:</strong> ${a.estado}</p>
-          <button onclick="solicitarAdopcion(${a.id})" ${a.estado !== "En adopción" ? "disabled" : ""}>
-            ${a.estado === "En adopción" ? "Solicitar adopción" : "No disponible"}
-          </button>
-        </div>
-      `).join("");
-    }
-
-    function filtrarPor(estado) {
-      mostrarGaleria();
-      const filtrados = window.animales.filter(a => a.estado === estado);
-      renderGaleria(filtrados);
-    }
-
-    function mostrarFormulario() {
-      document.getElementById("formulario").style.display = "block";
-      document.getElementById("galeriaContainer").style.display = "none";
-    }
-
-    function mostrarGaleria() {
-      document.getElementById("formulario").style.display = "none";
-      document.getElementById("galeriaContainer").style.display = "block";
-    }
-
-    function mostrarMensaje(msg, tipo = "success") {
-      const div = document.createElement("div");
-      div.textContent = msg;
-      div.style.position = "fixed";
-      div.style.top = "20px";
-      div.style.left = "50%";
-      div.style.transform = "translateX(-50%)";
-      div.style.background = tipo === "success" ? "orange" : "#e74c3c";
-      div.style.color = "white";
-      div.style.padding = "10px 20px";
-      div.style.borderRadius = "10px";
-      div.style.fontWeight = "bold";
-      div.style.zIndex = "9999";
-      div.style.boxShadow = "0 2px 5px rgba(0,0,0,0.2)";
-      document.body.appendChild(div);
-      setTimeout(() => div.remove(), 3000);
-    }
-
-        // Delegación de eventos para botones de "Solicitar adopción"
-    document.getElementById("galeria").addEventListener("click", async (e) => {
-      if (e.target.classList.contains("solicitar")) {
-        const animalId = e.target.dataset.id;
-        const userId = 1; // Podés reemplazarlo por el ID real del usuario logueado
-
-        const res = await fetch("http://127.0.0.1:5000/api/adopciones/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ animal_id: animalId, user_id: userId })
-        });
-
-        if (res.ok) {
-          mostrarMensaje("Solicitud de adopción enviada con éxito!");
-          // Opcional: actualizar la lista de solicitudes
-          const adopcionList = document.querySelector("adopcion-list");
-          if (adopcionList) adopcionList.loadSolicitudes();
-        } else {
-          mostrarMensaje("Ya solicitaste este animal ⚠️", "error");
-        }
-      }
-    });
-
-    // Mostrar formulario de tránsito
-    function mostrarFormTransito() {
-      document.getElementById("galeriaContainer").style.display = "none";
-      document.getElementById("formTransito").style.display = "block";
-      cargarSelects();
-    }
-
-    // Cargar listas de animales y usuarios
-    async function cargarSelects() {
-    // Cargar animales disponibles
-      const resAnimales = await fetch("http://127.0.0.1:5000/api/animals/");
-      const animales = await resAnimales.json();
-      const animalSelect = document.getElementById("animalSelect");
-
-      animalSelect.innerHTML = '<option value="">Seleccionar animal...</option>';
-      animales
-      .filter(a => a.estado !== "Tránsito") // solo los que no están ya en tránsito
-      .forEach(a => {
-      const option = document.createElement("option");
-      option.value = a.id;
-      option.textContent = `${a.nombre} (${a.estado})`;
-      animalSelect.appendChild(option);
-      });
-
-      // Cargar usuarios
-      const resUsuarios = await fetch("http://127.0.0.1:5000/api/users/");
-      const usuarios = await resUsuarios.json();
-      const userSelect = document.getElementById("userSelect");
-
-      userSelect.innerHTML = '<option value="">Seleccionar usuario...</option>';
-      usuarios.forEach(u => {
-        const option = document.createElement("option");
-        option.value = u.id;
-        option.textContent = u.username;
-        userSelect.appendChild(option);
-      });
-    }
-
-    // Enviar formulario
-    document.getElementById("transitoForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const animal_id = document.getElementById("animalSelect").value;
-      const user_id = document.getElementById("userSelect").value;
-
-      if (!animal_id || !user_id) {
-        mostrarMensaje("Seleccioná un animal y un usuario", "error");
-        return;
-      }
-
-      const res = await fetch("http://127.0.0.1:5000/api/transitos/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ animal_id, user_id })
-      });
-
-      const data = await res.json();
-
-      if (data.error) {
-        mostrarMensaje("⚠️ " + data.error, "error");
-      } else {
-        mostrarMensaje("Tránsito asignado con éxito!");
-        document.getElementById("transitoForm").reset();
-        loadAnimals(); // actualiza la galería
-        verTransitos(); // muestra los tránsitos activos
-      }
-    });
-
-    loadAnimals();
-
-    async function verMisSolicitudes() {
-      const userId = localStorage.getItem("user_id");
-      if (!userId) return mostrarMensaje("Debes iniciar sesión primero", "error");
-
-      const res = await fetch(`http://127.0.0.1:5000/api/adopciones/usuario/${userId}`);
-      const data = await res.json();
-
-      const galeria = document.getElementById("galeria");
-      galeria.innerHTML = data.length
-      ? data.map(s => `
-      <div class="card" style="border-top: 5px solid ${
-      s.estado === "Aprobada" ? "green" : s.estado === "Pendiente" ? "orange" : "gray"
-      }">
-      <h3>${s.animal_nombre || "Animal"}</h3>
-      <p><strong>Fecha:</strong> ${s.fecha_solicitud}</p>
-      <p><strong>Estado:</strong> 
-        <span style="color: ${
-        s.estado === "Aprobada" ? "green" : s.estado === "Pendiente" ? "orange" : "gray"
-        }">${s.estado}</span>
-        </p>
-        <p><strong>Usuario:</strong> ${s.user_nombre || "No especificado"}</p>
-        </div>
-        `).join("")
-        : "<p>No tenés solicitudes todavía</p>";
-    }
-
-    async function verTransitos() {
-      const res = await fetch("http://127.0.0.1:5000/api/transitos/");
-      const data = await res.json();
-      const galeria = document.getElementById("galeria");
-
-      document.getElementById("formulario").style.display = "none";
-      document.getElementById("formTransito").style.display = "none";
-      document.getElementById("galeriaContainer").style.display = "block";
-
-      galeria.innerHTML = data.length
-        ? data.map(t => `
-            <div class="card" style="border-top:5px solid #f39c12;">
-              <img src="https://via.placeholder.com/300x200?text=Animal+en+Tr%C3%A1nsito" alt="Animal">
-              <h3>${t.animal_nombre || 'Animal'}</h3>
-              <p><strong>Cuidador:</strong> ${t.user_nombre || 'No especificado'}</p>
-              <p><strong>Inicio:</strong> ${t.fecha_inicio}</p>
-              <p><strong>Estado:</strong> ${t.estado}</p>
-            </div>
-          `).join("")
-        : "<p>No hay animales en hogares de tránsito 🏠</p>";
-    }
-
-    function verDetallesAnimal(animal) {
-      const modal = document.createElement("div");
-      modal.style.position = "fixed";
-      modal.style.top = "0";
-      modal.style.left = "0";
-      modal.style.width = "100%";
-      modal.style.height = "100%";
-      modal.style.background = "rgba(0,0,0,0.6)";
-      modal.style.display = "flex";
-      modal.style.justifyContent = "center";
-      modal.style.alignItems = "center";
-      modal.innerHTML = `
-        <div style="background:white; padding:20px; border-radius:10px; width:300px; text-align:center;">
-          <h3>${animal.nombre}</h3>
-          <p><strong>Especie:</strong> ${animal.especie}</p>
-          <p><strong>Estado:</strong> ${animal.estado}</p>
-          <button style="background:orange;color:white;border:none;padding:8px 15px;border-radius:5px;cursor:pointer;">
-            Contactar al dueño
-          </button><br><br>
-          <button onclick="this.parentNode.parentNode.remove()" style="background:#ccc;border:none;padding:8px 15px;border-radius:5px;cursor:pointer;">
-            Cerrar
-          </button>
-        </div>`;
-      document.body.appendChild(modal);
-    }
-
-    // --- Actualización automática solo en "Inicio" ---
-    let autoRefresh = null;
-
-    function mostrarInicio() {
-      clearInterval(autoRefresh); // detiene cualquier autoactualización activa
-      mostrarGaleria(); // muestra la galería principal
-      loadAnimals(); // carga todos los animales
-      autoRefresh = setInterval(loadAnimals, 10000); // 🔁 actualiza solo "Inicio"
     }
 
     function detenerAutoActualizacion() {
       clearInterval(autoRefresh);
     }
+
+    // --- Registrar animal ---
+    document.getElementById("animalForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append("nombre", document.getElementById("nombre").value);
+      formData.append("especie", document.getElementById("especie").value);
+      formData.append("estado", document.getElementById("estado").value);
+      formData.append("foto", document.getElementById("foto").files[0]);
+
+      const res = await fetch("/api/animals/", { method: "POST", body: formData });
+      if (res.ok) {
+        mostrarInicio();
+        document.getElementById("animalForm").reset();
+      } else {
+        mostrarMensaje("Error al registrar el animal");
+      }
+    });
+
+    // --- Inicializar ---
+    mostrarInicio(); // empieza siempre en "Inicio"
   </script>
 </body>
 </html>

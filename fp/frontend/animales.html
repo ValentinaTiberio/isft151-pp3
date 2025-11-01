@@ -170,6 +170,7 @@
   </header>
 
   <nav class="toolbar">
+    <button id="inicioBtn" onclick="marcarActivo(this); mostrarInicio()">Inicio</button>
     <button onclick="marcarActivo(this); filtrarPor('Encontrado')">Encontrados</button>
     <button onclick="marcarActivo(this); filtrarPor('Perdido')">Perdidos</button>
     <button onclick="marcarActivo(this); filtrarPor('En adopción')">En adopción</button>
@@ -432,9 +433,6 @@
     });
 
     loadAnimals();
-    
-    // Actualiza automáticamente la pág cada 10 segundos
-    setInterval(loadAnimals, 10000);
 
     async function verMisSolicitudes() {
       const userId = localStorage.getItem("user_id");
@@ -508,6 +506,20 @@
           </button>
         </div>`;
       document.body.appendChild(modal);
+    }
+
+    // --- Actualización automática solo en "Inicio" ---
+    let autoRefresh = null;
+
+    function mostrarInicio() {
+      clearInterval(autoRefresh); // detiene cualquier autoactualización activa
+      mostrarGaleria(); // muestra la galería principal
+      loadAnimals(); // carga todos los animales
+      autoRefresh = setInterval(loadAnimals, 10000); // 🔁 actualiza solo "Inicio"
+    }
+
+    function detenerAutoActualizacion() {
+      clearInterval(autoRefresh);
     }
   </script>
 </body>

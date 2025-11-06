@@ -163,17 +163,34 @@
     <button onclick="mostrarFiltro('En adopción')">En adopción</button>
     <button onclick="mostrarFiltro('Tránsito')">Tránsitos</button>
     <button onclick="mostrarFormulario()">Registrar animal</button>
-    <button onclick="window.location.href='/solicitudes'">Mis Solicitudes</button>
+    <span id="menuUsuario"></span>
   </nav>
 
+  <script>
+    const userRole = localStorage.getItem("role"); // recuperamos el rol guardado
+    const menuUsuario = document.getElementById("menuUsuario");
+
+    if (userRole === "admin") {
+      menuUsuario.innerHTML = `
+        <button onclick="window.location.href='/admin/solicitudes'">Panel Admin</button>
+        <button onclick="window.location.href='/admin/reportes'">Reportes</button>
+      `;
+    } else {
+      menuUsuario.innerHTML = `
+        <button onclick="window.location.href='/solicitudes'">Mis Solicitudes</button>
+      `;
+    }
+  </script>
+
+
   <main>
-    <!-- 📋 Galería de animales -->
+    <!-- Galería de animales -->
     <section id="galeriaSection">
       <h2>Animales registrados</h2>
       <div id="galeria" class="galeria"></div>
     </section>
 
-    <!-- 🐾 Formulario de registro -->
+    <!-- Formulario de registro -->
     <section id="formularioSection" style="display:none;">
       <h2>Registrar nuevo animal 🐾</h2>
       <form id="animalForm" enctype="multipart/form-data">
@@ -229,9 +246,21 @@
           <p><strong>Especie:</strong> ${a.especie}</p>
           <p><strong>Estado:</strong> ${a.estado}</p>
 
+          ${a.estado === "Encontrado" || a.estado === "Perdido" ? `
+          <button onclick="contactarUsuario('${a.user_email}')">
+            Contactar usuario
+          </button>
+        ` : ""}
+
           ${a.estado === "En adopción" ? `
             <button class="solicitar" data-id="${a.id}">
               Solicitar adopción
+            </button>
+          ` : ""}
+      
+          ${a.estado === "Tránsito" || a.estado === "Busca tránsito" ? `
+            <button class="ofrecerTransito" data-id="${a.id}">
+              Ofrecer tránsito
             </button>
           ` : ""}
         </div>
@@ -261,6 +290,26 @@
           } else {
             mostrarMensaje(data.error || "Ya solicitaste este animal ⚠️");
           }
+        });
+      });
+
+      document.querySelectorAll(".ofrecerTransito").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+          const animalId = e.target.dataset.id;
+          const direccion = prompt("Ingresá dirección:");
+          const duracion = prompt("¿Por cuántos días ofrecés el tránsito?");
+          const userId = localStorage.getItem("user_id");
+
+          if (!direccion || !duracion) return alert("Datos incompletos");
+
+          const res = await fetch("http://127.0.0.1:5000/api/transitos/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ animal_id: animalId, user_id: userId, direccion, duracion })
+          });
+
+          const data = await res.json();
+          mostrarMensaje(data.error ? data.error : "Solicitud enviada ✅");
         });
       });
     }
@@ -329,6 +378,49 @@
 
     // --- Inicializar ---
     mostrarInicio(); // empieza siempre en "Inicio"
+
+    function mostrarMensaje(mensaje, tipo = "exito") {
+      const msg = document.createElement("div");
+      msg.textContent = mensaje;
+      msg.style.position = "fixed";
+      msg.style.top = "20px";
+      msg.style.left = "50%";
+      msg.style.transform = "translateX(-50%)";
+      msg.style.backgroundColor = tipo === "error" ? "#e74c3c" : "orange";
+      msg.style.color = "white";
+      msg.style.padding = "12px 25px";
+      msg.style.borderRadius = "10px";
+      msg.style.fontWeight = "bold";
+      msg.style.fontSize = "1.1em";
+      msg.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+      msg.style.zIndex = "9999";
+      msg.style.transition = "opacity 0.5s ease";
+      document.body.appendChild(msg);
+      setTimeout(() => {
+        msg.style.opacity = "0";
+        setTimeout(() => msg.remove(), 500);
+      }, 3500);
+    }
+
+
+    //  Agregar botón “Panel Admin” solo si el usuario tiene rol admin
+    const role = localStorage.getItem("role");
+    if (role === "admin") {
+      const nav = document.querySelector(".toolbar");
+      const adminBtn = document.createElement("button");
+      adminBtn.textContent = "Panel Admin ⚙️";
+      adminBtn.onclick = () => window.location.href = "/admin/solicitudes";
+      nav.appendChild(adminBtn);
+      // Reportes
+      const reportesBtn = document.createElement("button");
+      reportesBtn.textContent = "📊 Reportes";
+      reportesBtn.onclick = () => window.location.href = "/admin/reportes";
+      nav.appendChild(reportesBtn);
+    }
+
+    function contactarUsuario(email) {
+      mostrarMensaje(`Podés contactar al usuario en: ${email}`);
+    }
   </script>
 </body>
 </html>

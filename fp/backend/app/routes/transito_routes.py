@@ -1,23 +1,37 @@
-from flask import Blueprint, request, jsonify
-from backend.app.services.transito_service import crear_transito, listar_transitos, finalizar_transito
+from flask import Blueprint, jsonify, request
+from backend.app.services import transito_service
 
-transito_bp = Blueprint("transitos", __name__)
+transito_bp = Blueprint('transito_bp', __name__)
 
-@transito_bp.route("/", methods=["POST"])
-def crear():
+@transito_bp.route('/', methods=['GET'])
+def obtener_todos():
+    transitos = transito_service.obtener_todos()
+    return jsonify([{
+        "id": t.id,
+        "animal_id": t.animal_id,
+        "animal_nombre": t.animal.nombre if t.animal else None,
+        "user_id": t.user_id,
+        "direccion": t.direccion,
+        "duracion_dias": t.duracion_dias,
+        "estado": t.estado,
+        "fecha_solicitud": t.fecha_solicitud.strftime("%Y-%m-%d %H:%M")
+    } for t in transitos])
+
+@transito_bp.route('/usuario/<int:user_id>', methods=['GET'])
+def obtener_por_usuario(user_id):
+    transitos = transito_service.obtener_por_usuario(user_id)
+    return jsonify([{
+        "id": t.id,
+        "animal_id": t.animal_id,
+        "animal_nombre": t.animal.nombre if t.animal else None,
+        "direccion": t.direccion,
+        "duracion_dias": t.duracion_dias,
+        "estado": t.estado,
+        "fecha_solicitud": t.fecha_solicitud.strftime("%Y-%m-%d %H:%M")
+    } for t in transitos])
+
+@transito_bp.route('/', methods=['POST'])
+def crear_transito():
     data = request.get_json()
-    animal_id = data.get("animal_id")
-    user_id = data.get("user_id")
-    nuevo = crear_transito(animal_id, user_id)
-    return jsonify(nuevo), 201
-
-@transito_bp.route("/", methods=["GET"])
-def listar():
-    return jsonify(listar_transitos())
-
-@transito_bp.route("/<int:id>/finalizar", methods=["PUT"])
-def finalizar(id):
-    actualizado = finalizar_transito(id)
-    if actualizado:
-        return jsonify(actualizado)
-    return jsonify({"error": "Transito no encontrado"}), 404
+    t = transito_service.crear_transito(data)
+    return jsonify({"mensaje": "Tránsito creado correctamente", "id": t.id})

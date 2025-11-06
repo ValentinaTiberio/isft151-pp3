@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reportes - RescatePET</title>
+  <style>
+    body { font-family: 'Segoe UI'; background: #f8f8f8; margin: 0; text-align: center; }
+    header { background: white; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .rescate { color: black; font-weight: bold; }
+    .pet { color: orange; font-weight: bold; }
+    .report-card {
+      display: inline-block;
+      background: white;
+      padding: 20px;
+      margin: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      width: 250px;
+    }
+    h2 { color: #333; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><span class="rescate">RESCATE</span><span class="pet">PET</span> - Reportes</h1>
+    <button onclick="window.location.href='/animales'">🏠 Volver</button>
+  </header>
+
+  <main>
+    <div class="report-card">
+      <h2>Animales</h2>
+      <p id="animalesCount">0</p>
+    </div>
+
+    <div class="report-card">
+      <h2>Adopciones</h2>
+      <p id="adopcionesCount">0</p>
+    </div>
+
+    <div class="report-card">
+      <h2>Tránsitos</h2>
+      <p id="transitosCount">0</p>
+    </div>
+  </main>
+
+  <script>
+    async function cargarReportes() {
+      const res = await fetch("http://127.0.0.1:5000/api/reportes/");
+      const data = await res.json();
+      document.getElementById("animalesCount").textContent = data.animales;
+      document.getElementById("adopcionesCount").textContent = data.adopciones;
+      document.getElementById("transitosCount").textContent = data.transitos;
+    }
+    cargarReportes();
+  </script>
+</body>
+</html>

@@ -16,10 +16,12 @@ def create_app():
     from backend.app.routes.animal_routes import animal_bp
     from backend.app.routes.adopcion_routes import adopcion_bp
     from backend.app.routes.transito_routes import transito_bp
+    from backend.app.routes.reportes_routes import reportes_bp
     app.register_blueprint(user_bp, url_prefix="/api/users")
     app.register_blueprint(animal_bp, url_prefix="/api/animals")
     app.register_blueprint(adopcion_bp, url_prefix="/api/adopciones")
     app.register_blueprint(transito_bp, url_prefix="/api/transitos")
+    app.register_blueprint(reportes_bp, url_prefix="/api/reportes")
 
     # Carpeta frontend
     FRONTEND_FOLDER = os.path.join(os.path.dirname(__file__), "..", "frontend")

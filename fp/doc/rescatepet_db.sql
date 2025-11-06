@@ -1,0 +1,35 @@
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL
+);
+
+CREATE TABLE animals (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nombre TEXT NOT NULL,
+  especie TEXT NOT NULL,
+  estado TEXT NOT NULL,
+  foto TEXT,
+  fecha_ingreso DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE adopciones (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  animal_id INTEGER NOT NULL,
+  fecha_solicitud DATETIME DEFAULT CURRENT_TIMESTAMP,
+  estado TEXT DEFAULT 'Pendiente',
+  FOREIGN KEY(user_id) REFERENCES users(id),
+  FOREIGN KEY(animal_id) REFERENCES animals(id)
+);
+
+CREATE TABLE transitos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  animal_id INTEGER NOT NULL,
+  fecha_inicio DATETIME DEFAULT CURRENT_TIMESTAMP,
+  estado TEXT DEFAULT 'Activo',
+  FOREIGN KEY(user_id) REFERENCES users(id),
+  FOREIGN KEY(animal_id) REFERENCES animals(id)
+);

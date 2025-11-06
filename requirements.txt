@@ -1,4 +1,0 @@
-pip install flask flask_sqlalchemy
-
-flask==3.0.3
-PyJWT==2.9.0

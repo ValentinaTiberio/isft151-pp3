@@ -163,7 +163,6 @@
     <button onclick="mostrarFiltro('En adopción')">En adopción</button>
     <button onclick="mostrarFiltro('Tránsito')">Tránsitos</button>
     <button onclick="mostrarFormulario()">Registrar animal</button>
-    <button onclick="window.location.href='/solicitudes'">Mis Solicitudes</button>
   </nav>
 
   <main>
@@ -329,6 +328,41 @@
 
     // --- Inicializar ---
     mostrarInicio(); // empieza siempre en "Inicio"
+
+    function mostrarMensaje(mensaje, tipo = "exito") {
+      const msg = document.createElement("div");
+      msg.textContent = mensaje;
+      msg.style.position = "fixed";
+      msg.style.top = "20px";
+      msg.style.left = "50%";
+      msg.style.transform = "translateX(-50%)";
+      msg.style.backgroundColor = tipo === "error" ? "#e74c3c" : "orange";
+      msg.style.color = "white";
+      msg.style.padding = "12px 25px";
+      msg.style.borderRadius = "10px";
+      msg.style.fontWeight = "bold";
+      msg.style.fontSize = "1.1em";
+      msg.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+      msg.style.zIndex = "9999";
+      msg.style.transition = "opacity 0.5s ease";
+      document.body.appendChild(msg);
+      setTimeout(() => {
+        msg.style.opacity = "0";
+        setTimeout(() => msg.remove(), 500);
+      }, 3500);
+    }
+
+
+    //  Agregar botón “Panel Admin” solo si el usuario tiene rol admin
+    const role = localStorage.getItem("role");
+    if (role === "admin") {
+      const nav = document.querySelector(".toolbar");
+      const adminBtn = document.createElement("button");
+      adminBtn.textContent = "Panel Admin ⚙️";
+      adminBtn.onclick = () => window.location.href = "/admin/solicitudes";
+      nav.appendChild(adminBtn);
+    }
+
   </script>
 </body>
 </html>

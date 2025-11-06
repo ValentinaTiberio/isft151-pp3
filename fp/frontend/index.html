@@ -116,14 +116,18 @@
 
       const data = await res.json();
       
-      // Se modifico los alertas para que se salgan de manera automática
     if (data.token) {
       localStorage.setItem("token", data.token);
-      localStorage.setItem("user_id", data.user.id); // ✅ guarda el ID del usuario
-      mostrarMensaje("Login exitoso");
+      localStorage.setItem("user_id", data.user.id);
+
+      // ✅ Agregamos el rol: si el email es del admin, se guarda como "admin", sino "user"
+      const role = email === "admin@rescatepet.com" ? "admin" : "user";
+      localStorage.setItem("role", role);
+
+      mostrarMensaje("Login exitoso ✅");
       setTimeout(() => window.location.href = "/animales", 1500);
     } else {
-      mostrarMensaje("Credenciales inválidas", "error");
+      mostrarMensaje("Credenciales inválidas ❌", "error");
     }
 
 

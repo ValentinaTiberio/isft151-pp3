@@ -8,6 +8,10 @@ class Animal(db.Model):
     estado = db.Column(db.String(80), nullable=False)
     foto = db.Column(db.String(200))
     fecha_ingreso = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relación con usuario (nuevo)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    usuario = db.relationship('User', backref='animales')
 
     def to_dict(self):
         return {
@@ -16,5 +20,6 @@ class Animal(db.Model):
             "especie": self.especie,
             "estado": self.estado,
             "foto": self.foto,
-            "fecha_ingreso": self.fecha_ingreso.strftime("%Y-%m-%d")
+            "fecha_ingreso": self.fecha_ingreso.strftime("%Y-%m-%d"),
+            "user_email": self.usuario.email if hasattr(self, "usuario") and self.usuario else None
         }

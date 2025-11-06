@@ -13,7 +13,16 @@ def crear():
 
 @adopcion_bp.route("/", methods=["GET"])
 def listar():
-    return jsonify(listar_solicitudes())
+    from backend.app.models.adopcion_model import Adopcion
+    adopciones = Adopcion.query.all()
+    return jsonify([{
+        "id": a.id,
+        "animal_id": a.animal_id,
+        "animal_nombre": a.animal.nombre if a.animal else None,
+        "usuario_nombre": a.usuario.username if a.usuario else None,  # ← agregado
+        "estado": a.estado,
+        "fecha_solicitud": a.fecha_solicitud.strftime("%Y-%m-%d %H:%M")
+    } for a in adopciones])
 
 @adopcion_bp.route("/<int:id>", methods=["PUT"])
 def actualizar(id):

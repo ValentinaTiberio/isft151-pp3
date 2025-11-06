@@ -42,15 +42,24 @@
       <p id="transitosCount">0</p>
     </div>
   </main>
-
+  
   <script>
     async function cargarReportes() {
-      const res = await fetch("http://127.0.0.1:5000/api/reportes/");
-      const data = await res.json();
-      document.getElementById("animalesCount").textContent = data.animales;
-      document.getElementById("adopcionesCount").textContent = data.adopciones;
-      document.getElementById("transitosCount").textContent = data.transitos;
+      const [animales, adopciones, transitos] = await Promise.all([
+        fetch("/api/animales/").then(r => r.json()),
+        fetch("/api/adopciones/").then(r => r.json()),
+        fetch("/api/transitos/").then(r => r.json())
+      ]);
+
+      const totalAnimales = animales.length;
+      const totalAdopciones = adopciones.filter(a => a.estado === "Aprobada").length;
+      const totalTransitos = transitos.filter(t => t.estado === "Aprobada").length;
+
+      document.getElementById("animales").innerHTML = `<h2>${totalAnimales}</h2><p>Animales registrados</p>`;
+      document.getElementById("adopciones").innerHTML = `<h2>${totalAdopciones}</h2><p>Adopciones concretadas</p>`;
+      document.getElementById("transitos").innerHTML = `<h2>${totalTransitos}</h2><p>Tránsitos concretados</p>`;
     }
+
     cargarReportes();
   </script>
 </body>

@@ -1,41 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mis Solicitudes - RescatePET</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: white;
+      padding: 20px 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      color: orange;
+      margin: 0;
+    }
+
+    #volverBtn {
+      background-color: orange;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    #volverBtn:hover {
+      background-color: #e69500;
+    }
+
+    main {
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #solicitudesContainer {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      width: 90%;
+      max-width: 1100px;
+    }
+
+    .card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      transition: 0.2s;
+    }
+
+    .card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    }
+
+    .tipo {
+      font-weight: bold;
+      color: orange;
+      margin-bottom: 5px;
+    }
+
+    .estado {
+      padding: 5px 10px;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      display: inline-block;
+      font-size: 0.9em;
+    }
+
+    .Pendiente { background-color: #f39c12; }
+    .Aprobado { background-color: #27ae60; }
+    .Rechazado { background-color: #e74c3c; }
+
+    p { margin: 6px 0; }
+  </style>
+</head>
 <body>
-  <header><h1>Mis solicitudes</h1></header>
+  <header>
+    <h1>Mis Solicitudes</h1>
+    <button id="volverBtn" onclick="window.location.href='/animales'">Volver</button>
+  </header>
+
   <main>
-    <div id="solicitudesContainer"></div>
+    <div id="solicitudesContainer">Cargando tus solicitudes...</div>
   </main>
 
   <script>
     const userId = localStorage.getItem("user_id");
 
-    async function cargarMisSolicitudes() {
-      const adopciones = await fetch(`http://127.0.0.1:5000/api/adopciones/usuario/${userId}`).then(r => r.json());
-      const transitos = await fetch(`http://127.0.0.1:5000/api/transitos/usuario/${userId}`).then(r => r.json());
+    async function cargarSolicitudes() {
+      try {
+        const adopciones = await fetch(`/api/adopciones/usuario/${userId}`).then(r => r.json());
+        const transitos = await fetch(`/api/transitos/usuario/${userId}`).then(r => r.json());
 
-      const todas = [
-        ...adopciones.map(a => ({ tipo: "Adopción", ...a })),
-        ...transitos.map(t => ({ tipo: "Tránsito", ...t }))
-      ];
+        const todas = [
+          ...adopciones.map(a => ({ tipo: "Adopción", ...a })),
+          ...transitos.map(t => ({ tipo: "Tránsito", ...t }))
+        ];
 
-      const div = document.getElementById("solicitudesContainer");
-      if (todas.length === 0) {
-        div.innerHTML = "<p>No tenés solicitudes aún.</p>";
-        return;
+        const cont = document.getElementById("solicitudesContainer");
+
+        if (todas.length === 0) {
+          cont.innerHTML = "<p>No tenés solicitudes todavía</p>";
+          return;
+        }
+
+        cont.innerHTML = todas.map(s => `
+          <div class="card">
+            <div class="tipo">${s.tipo}</div>
+            <h3>${s.animal_nombre || "Animal sin nombre"}</h3>
+            <p><b>Dirección:</b> ${s.direccion || "-"}</p>
+            <p><b>Duración:</b> ${s.duracion_dias ? s.duracion_dias + " días" : "-"}</p>
+            <p><b>Fecha:</b> ${s.fecha_solicitud || "-"}</p>
+            <p><span class="estado ${s.estado}">${s.estado}</span></p>
+          </div>
+        `).join("");
+      } catch (error) {
+        console.error("Error al cargar solicitudes:", error);
+        document.getElementById("solicitudesContainer").innerHTML =
+          "<p>Error al cargar las solicitudes</p>";
       }
-
-      div.innerHTML = todas.map(s => `
-        <div style="background:white;padding:10px;margin:10px;border-radius:10px;box-shadow:0px 2px 5px rgba(0,0,0,0.1)">
-          <h3>${s.animal_nombre || "Animal sin nombre"}</h3>
-          <p><b>Tipo:</b> ${s.tipo}</p>
-          <p><b>Estado:</b> ${s.estado}</p>
-          <p><b>Fecha:</b> ${s.fecha_solicitud}</p>
-          ${s.tipo === "Tránsito" ? `
-            <p><b>Dirección ofrecida:</b> ${s.direccion}</p>
-            <p><b>Días ofrecidos:</b> ${s.duracion_dias}</p>
-          ` : ""}
-        </div>
-      `).join("");
     }
 
-    cargarMisSolicitudes();
+    cargarSolicitudes();
   </script>
 </body>
+</html>

@@ -103,7 +103,9 @@
           <th>Animal</th>
           <th>Usuario</th>
           <th>Fecha</th>
+          <th>Solicitud</th>
           <th>Estado</th>
+          <th>Observaciones</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -112,42 +114,64 @@
   </main>
 
   <script>
-    async function cargarSolicitudes() {
-      const res = await fetch("http://127.0.0.1:5000/api/adopciones/");
-      const data = await res.json();
+  async function cargarSolicitudes() {
+    const contenedor = document.querySelector("tbody");
 
-      const tbody = document.querySelector("#tablaSolicitudes tbody");
-      tbody.innerHTML = data.map(s => `
-        <tr>
-          <td>${s.id}</td>
-          <td>${s.animal_nombre || "—"}</td>
-          <td>${s.user_nombre || "—"}</td>
-          <td>${s.fecha_solicitud}</td>
-          <td class="estado ${s.estado}">${s.estado}</td>
-          <td>
-            <button onclick="actualizarEstado(${s.id}, 'Aprobada')">✅ Aprobar</button>
-            <button onclick="actualizarEstado(${s.id}, 'Rechazada')">❌ Rechazar</button>
-          </td>
-        </tr>
-      `).join("");
-    }
+    const [adopcionesRes, transitosRes] = await Promise.all([
+      fetch("/api/adopciones/").then(r => r.json()),
+      fetch("/api/transitos/").then(r => r.json())
+    ]);
 
-    async function actualizarEstado(id, nuevoEstado) {
-      const res = await fetch(`http://127.0.0.1:5000/api/adopciones/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ estado: nuevoEstado })
-      });
+    const adopciones = adopcionesRes.map(a => ({
+      id: a.id,
+      tipo: "Adopción",
+      animal: a.animal_nombre,
+      usuario: a.usuario_nombre,
+      fecha: a.fecha_solicitud,
+      estado: a.estado,
+      observaciones: "-"
+    }));
 
-      if (res.ok) {
-        alert("Estado actualizado con éxito ✅");
-        cargarSolicitudes();
-      } else {
-        alert("Error al actualizar el estado ❌");
-      }
-    }
+    const transitos = transitosRes.map(t => ({
+      id: t.id,
+      tipo: "Tránsito",
+      animal: t.animal_nombre,
+      usuario: t.usuario_nombre,
+      fecha: t.fecha_solicitud,
+      estado: t.estado,
+      observaciones: `Dirección: ${t.direccion}<br>Días: ${t.duracion_dias}`
+    }));
 
+    const todas = [...adopciones, ...transitos];
+
+    contenedor.innerHTML = todas.map(s => `
+      <tr>
+        <td>${s.id}</td>
+        <td>${s.animal}</td>
+        <td>${s.usuario}</td>
+        <td>${s.fecha}</td>
+        <td>${s.tipo}</td>
+        <td class="${s.estado === 'Aprobada' ? 'aprobada' : s.estado === 'Rechazada' ? 'rechazada' : 'pendiente'}">${s.estado}</td>
+        <td>${s.observaciones}</td>
+        <td>
+          <button class="btn-aceptar" onclick="cambiarEstado('${s.tipo.toLowerCase()}', ${s.id}, 'Aprobada')">✅ Aprobar</button>
+          <button class="btn-rechazar" onclick="cambiarEstado('${s.tipo.toLowerCase()}', ${s.id}, 'Rechazada')">❌ Rechazar</button>
+        </td>
+      </tr>
+    `).join("");
+  }
+  
+  async function cambiarEstado(tipo, id, nuevoEstado) {
+    const endpoint = tipo === "adopción" ? "/api/adopciones/" : "/api/transitos/";
+    await fetch(endpoint + id, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ estado: nuevoEstado })
+    });
     cargarSolicitudes();
+  }
+  
+  cargarSolicitudes();
   </script>
 </body>
 </html>

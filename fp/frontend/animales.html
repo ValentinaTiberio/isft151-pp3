@@ -70,10 +70,11 @@
       color: orange;
       transform: scale(1.05);
     }
-
+    
     .toolbar button.active {
-      color: orange;
-      border-bottom: 2px solid orange;
+      border-bottom: 3px solid orange;
+      font-weight: bold;
+      color: #f39c12;
     }
 
     main {
@@ -147,22 +148,22 @@
       background-color: #e69500;
     }
 
-  .solicitar {
-    background: linear-gradient(45deg, orange, #ffb347);
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: bold;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-    transition: 0.3s;
-  }
+    .btn-principal {
+      background: linear-gradient(45deg, orange, #ffb347);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+      transition: 0.3s;
+    }
 
-  .solicitar:hover {
-    background: #e69500;
-    transform: scale(1.05);
-  }
+    .btn-principal:hover {
+      background: #e69500;
+      transform: scale(1.05);
+    }
 
   </style>
 </head>
@@ -265,19 +266,19 @@
           <p><strong>Estado:</strong> ${a.estado}</p>
 
           ${a.estado === "Encontrado" || a.estado === "Perdido" ? `
-          <button onclick="contactarUsuario('${a.user_email}')">
-            Contactar usuario
-          </button>
-        ` : ""}
+            <button class="btn-principal" onclick="contactarUsuario('${a.user_email}')">
+              Contactar usuario
+            </button>
+          ` : ""}
 
           ${a.estado === "En adopción" ? `
-            <button class="solicitar" data-id="${a.id}">
+            <button class="btn-principal" data-id="${a.id}">
               Solicitar adopción
             </button>
           ` : ""}
       
           ${a.estado === "Tránsito" || a.estado === "Busca tránsito" ? `
-            <button class="ofrecerTransito" data-id="${a.id}">
+            <button class="btn-principal" data-id="${a.id}">
               Ofrecer tránsito
             </button>
           ` : ""}
@@ -311,24 +312,33 @@
         });
       });
 
-      document.querySelectorAll(".ofrecerTransito").forEach(btn => {
-        btn.addEventListener("click", async (e) => {
-          const animalId = e.target.dataset.id;
-          const direccion = prompt("Ingresá dirección:");
-          const duracion = prompt("¿Por cuántos días ofrecés el tránsito?");
+      document.addEventListener("click", async (e) => {
+        if (e.target.matches(".btn-principal") && e.target.textContent.includes("Ofrecer tránsito")) {
+          const animalId = e.target.getAttribute("data-id");
           const userId = localStorage.getItem("user_id");
 
-          if (!direccion || !duracion) return alert("Datos incompletos");
+          const direccion = prompt("Ingresá tu dirección para el tránsito:");
+          const duracion = prompt("¿Cuántos días podés ofrecer tránsito?");
+
+          if (!direccion || !duracion) {
+            alert("Debés completar todos los datos.");
+            return;
+          }
 
           const res = await fetch("http://127.0.0.1:5000/api/transitos/", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ animal_id: animalId, user_id: userId, direccion, duracion })
+            body: JSON.stringify({
+              animal_id: animalId,
+              user_id: userId,
+              direccion,
+              duracion
+            }),
           });
 
           const data = await res.json();
-          mostrarMensaje(data.error ? data.error : "Solicitud enviada ✅");
-        });
+          alert(data.mensaje || "Solicitud enviada correctamente.");
+        }
       });
     }
 
@@ -420,25 +430,18 @@
       }, 3500);
     }
 
-
-    //  Agregar botón “Panel Admin” solo si el usuario tiene rol admin
-    const role = localStorage.getItem("role");
-    if (role === "admin") {
-      const nav = document.querySelector(".toolbar");
-      const adminBtn = document.createElement("button");
-      adminBtn.textContent = "Panel Admin ⚙️";
-      adminBtn.onclick = () => window.location.href = "/admin/solicitudes";
-      nav.appendChild(adminBtn);
-      // Reportes
-      const reportesBtn = document.createElement("button");
-      reportesBtn.textContent = "📊 Reportes";
-      reportesBtn.onclick = () => window.location.href = "/admin/reportes";
-      nav.appendChild(reportesBtn);
-    }
-
     function contactarUsuario(email) {
       mostrarMensaje(`Podés contactar al usuario en: ${email}`);
     }
+    
+    const currentPage = window.location.pathname;
+    document.querySelectorAll(".toolbar button").forEach(btn => {
+      if (btn.textContent.includes("Registrar animal") && currentPage.includes("registrar")) {
+        btn.classList.add("active");
+      } else if (btn.onclick && currentPage.includes(btn.textContent.toLowerCase())) {
+        btn.classList.add("active");
+      }
+    });
   </script>
 </body>
 </html>

@@ -10,12 +10,14 @@ def obtener_todos():
         "id": t.id,
         "animal_id": t.animal_id,
         "animal_nombre": t.animal.nombre if t.animal else None,
+        "usuario_nombre": t.usuario.username if t.usuario else None,  # ← agregado
         "user_id": t.user_id,
         "direccion": t.direccion,
         "duracion_dias": t.duracion_dias,
         "estado": t.estado,
         "fecha_solicitud": t.fecha_solicitud.strftime("%Y-%m-%d %H:%M")
     } for t in transitos])
+
 
 @transito_bp.route('/usuario/<int:user_id>', methods=['GET'])
 def obtener_por_usuario(user_id):

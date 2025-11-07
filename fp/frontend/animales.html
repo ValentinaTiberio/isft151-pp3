@@ -20,11 +20,7 @@
       align-items: center;
     }
 
-    .titulo {
-      font-size: 2em;
-      font-weight: bold;
-    }
-
+    .titulo { font-size: 2em; font-weight: bold; }
     .rescate { color: black; }
     .pet { color: orange; }
 
@@ -39,11 +35,9 @@
       transition: 0.3s;
     }
 
-    #logoutBtn:hover {
-      background-color: #e69500;
-    }
+    #logoutBtn:hover { background-color: #e69500; }
 
-    /* ---- barra de herramientas ---- */
+    /* ---- barra ---- */
     .toolbar {
       background-color: #fff;
       display: flex;
@@ -66,16 +60,8 @@
       transition: 0.3s;
     }
 
-    .toolbar button:hover {
-      color: orange;
-      transform: scale(1.05);
-    }
-    
-    .toolbar button.active {
-      border-bottom: 3px solid orange;
-      font-weight: bold;
-      color: #f39c12;
-    }
+    .toolbar button:hover { color: orange; transform: scale(1.05); }
+    .toolbar button.active { border-bottom: 3px solid orange; color: #f39c12; }
 
     main {
       padding: 30px;
@@ -84,7 +70,6 @@
       align-items: center;
     }
 
-    /* ---- tarjetas ---- */
     .galeria {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -104,17 +89,8 @@
     }
 
     .card:hover { transform: scale(1.02); }
+    .card img { width: 100%; height: 180px; object-fit: cover; }
 
-    .card img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-    }
-
-    .card h3 { margin: 10px 0 0 0; }
-    .card p { color: #555; font-size: 0.9em; margin: 5px 0; }
-
-    /* ---- formularios ---- */
     form {
       background: white;
       padding: 20px;
@@ -144,9 +120,7 @@
       transition: 0.3s;
     }
 
-    button[type="submit"]:hover {
-      background-color: #e69500;
-    }
+    button[type="submit"]:hover { background-color: #e69500; }
 
     .btn-principal {
       background: linear-gradient(45deg, orange, #ffb347);
@@ -160,11 +134,59 @@
       transition: 0.3s;
     }
 
-    .btn-principal:hover {
-      background: #e69500;
-      transform: scale(1.05);
+    .btn-principal:hover { background: #e69500; transform: scale(1.05); }
+
+    /*Modal elegante*/
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.4);
+      justify-content: center;
+      align-items: center;
     }
 
+    .modal-content {
+      background: white;
+      padding: 25px 80px;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      width: 390px;
+      text-align: center;
+      animation: aparecer 0.3s ease;
+    }
+
+    .modal-content input {
+      width: 90%;
+      margin-bottom: 12px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .modal-buttons button {
+      background-color: orange;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .modal-buttons button:hover { background-color: #e69500; }
+
+    @keyframes aparecer {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -186,30 +208,40 @@
   </nav>
 
   <script>
-    const userRole = localStorage.getItem("role"); // recuperamos el rol guardado
+    const userRole = localStorage.getItem("role");
     const menuUsuario = document.getElementById("menuUsuario");
-
     if (userRole === "admin") {
       menuUsuario.innerHTML = `
         <button onclick="window.location.href='/admin/solicitudes'">Panel Admin</button>
-        <button onclick="window.location.href='/admin/reportes'">Reportes</button>
-      `;
+        <button onclick="window.location.href='/admin/reportes'">Reportes</button>`;
     } else {
-      menuUsuario.innerHTML = `
-        <button onclick="window.location.href='/solicitudes'">Mis Solicitudes</button>
-      `;
+      menuUsuario.innerHTML = `<button onclick="window.location.href='/solicitudes'">Mis Solicitudes</button>`;
     }
   </script>
 
-
   <main>
-    <!-- Galería de animales -->
+    <!-- 🌟 Modal Tránsito -->
+    <div id="transitoModal" class="modal">
+      <div class="modal-content">
+        <h3>Ofrecer Tránsito 🏠</h3>
+        <form id="transitoForm">
+          <label for="direccion">Dirección:</label>
+          <input type="text" id="direccion" required placeholder="Ej: Calle 123">
+          <label for="duracion">Días disponibles:</label>
+          <input type="number" id="duracion" required min="1" placeholder="Ej: 7">
+          <div class="modal-buttons">
+            <button type="submit">Enviar</button>
+            <button type="button" id="cancelarBtn">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <section id="galeriaSection">
       <h2>Animales registrados</h2>
       <div id="galeria" class="galeria"></div>
     </section>
 
-    <!-- Formulario de registro -->
     <section id="formularioSection" style="display:none;">
       <h2>Registrar nuevo animal 🐾</h2>
       <form id="animalForm" enctype="multipart/form-data">
@@ -237,209 +269,68 @@
     let autoRefresh = null;
     let animales = [];
 
-    // --- LOGIN CHECK ---
     const token = localStorage.getItem("token");
     if (!token) window.location.href = "/";
+    document.getElementById("logoutBtn").onclick = () => { localStorage.clear(); window.location.href = "/"; };
 
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      localStorage.clear();
-      window.location.href = "/";
-    });
-
-    // --- Cargar animales ---
     async function loadAnimals() {
       const res = await fetch("/api/animals/");
       animales = await res.json();
-      animales.sort((a, b) => new Date(b.fecha_ingreso) - new Date(a.fecha_ingreso));
+      animales.sort((a,b)=> new Date(b.fecha_ingreso)-new Date(a.fecha_ingreso));
       renderGaleria(animales);
     }
 
-    // --- Renderizar ---
     function renderGaleria(lista) {
       const galeria = document.getElementById("galeria");
       galeria.innerHTML = lista.map(a => `
         <div class="card">
-          <img src="${a.foto ? `/api/animals/uploads/${a.foto}` : 'https://via.placeholder.com/300x200?text=Sin+foto'}" 
-              alt="${a.nombre}">
+          <img src="${a.foto ? `/api/animals/uploads/${a.foto}` : 'https://via.placeholder.com/300x200?text=Sin+foto'}">
           <h3>${a.nombre}</h3>
           <p><strong>Especie:</strong> ${a.especie}</p>
           <p><strong>Estado:</strong> ${a.estado}</p>
-
-          ${a.estado === "Encontrado" || a.estado === "Perdido" ? `
-            <button class="btn-principal" onclick="contactarUsuario('${a.user_email}')">
-              Contactar usuario
-            </button>
-          ` : ""}
-
-          ${a.estado === "En adopción" ? `
-            <button class="btn-principal" data-id="${a.id}">
-              Solicitar adopción
-            </button>
-          ` : ""}
-      
-          ${a.estado === "Tránsito" || a.estado === "Busca tránsito" ? `
-            <button class="btn-principal" data-id="${a.id}">
-              Ofrecer tránsito
-            </button>
-          ` : ""}
-        </div>
-      `).join("");
+          ${a.estado==="Encontrado"||a.estado==="Perdido"?`<button class="btn-principal" onclick="contactarUsuario('${a.user_email}')">Contactar usuario</button>`:""}
+          ${a.estado==="En adopción"?`<button class="btn-principal" data-id="${a.id}">Solicitar adopción</button>`:""}
+          ${(a.estado==="Tránsito"||a.estado==="Busca tránsito")?`<button class="btn-principal" data-id="${a.id}" onclick="abrirModalTransito(${a.id})">Ofrecer tránsito</button>`:""}
+        </div>`).join("");
     }
 
-    // --- Mostrar inicio ---
-    function mostrarInicio() {
-      marcarActivo(document.getElementById("inicioBtn"));
-      document.getElementById("formularioSection").style.display = "none";
-      document.getElementById("galeriaSection").style.display = "block";
-      clearInterval(autoRefresh);
-      loadAnimals();
-      autoRefresh = setInterval(loadAnimals, 10000);
+    function abrirModalTransito(animalId) {
+      const modal = document.getElementById("transitoModal");
+      modal.style.display = "flex";
+      const form = document.getElementById("transitoForm");
+      const cancelar = document.getElementById("cancelarBtn");
+      cancelar.onclick = ()=> modal.style.display="none";
+
+      form.onsubmit = async e => {
+        e.preventDefault();
+        const direccion=document.getElementById("direccion").value;
+        const duracion=document.getElementById("duracion").value;
+        const userId=localStorage.getItem("user_id");
+        const res=await fetch("/api/transitos/",{
+          method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({animal_id:animalId,user_id:userId,direccion,duracion})
+        });
+        if(res.ok){mostrarMensaje("Solicitud de tránsito enviada correctamente");modal.style.display="none";form.reset();}
+        else mostrarMensaje("Error al enviar la solicitud","error");
+      };
     }
 
-    // --- Mostrar filtro ---
-    function mostrarFiltro(estado) {
-      detenerAutoActualizacion();
-      marcarActivoPorTexto(estado);
-      document.getElementById("formularioSection").style.display = "none";
-      document.getElementById("galeriaSection").style.display = "block";
-      const filtrados = animales.filter(a => a.estado === estado);
-      renderGaleria(filtrados);
-    }
+    function mostrarInicio(){marcarActivo(document.getElementById("inicioBtn"));document.getElementById("formularioSection").style.display="none";document.getElementById("galeriaSection").style.display="block";clearInterval(autoRefresh);loadAnimals();autoRefresh=setInterval(loadAnimals,10000);}
+    function mostrarFiltro(e){clearInterval(autoRefresh);marcarActivoPorTexto(e);document.getElementById("formularioSection").style.display="none";const f=animales.filter(a=>a.estado===e);renderGaleria(f);}
+    function mostrarFormulario(){clearInterval(autoRefresh);document.getElementById("galeriaSection").style.display="none";document.getElementById("formularioSection").style.display="block";}
+    function marcarActivo(b){document.querySelectorAll(".toolbar button").forEach(x=>x.classList.remove("active"));b.classList.add("active");}
+    function marcarActivoPorTexto(t){document.querySelectorAll(".toolbar button").forEach(b=>{b.classList.remove("active");if(b.textContent.trim()===t||b.textContent.includes(t))b.classList.add("active");});}
 
-    // --- Mostrar formulario ---
-    function mostrarFormulario() {
-      detenerAutoActualizacion();
-      document.getElementById("galeriaSection").style.display = "none";
-      document.getElementById("formularioSection").style.display = "block";
-    }
-
-    function marcarActivo(boton) {
-      document.querySelectorAll(".toolbar button").forEach(b => b.classList.remove("active"));
-      boton.classList.add("active");
-    }
-
-    function marcarActivoPorTexto(texto) {
-      document.querySelectorAll(".toolbar button").forEach(b => {
-        b.classList.remove("active");
-        if (b.textContent.trim() === texto || b.textContent.trim().includes(texto)) b.classList.add("active");
-      });
-    }
-
-    function detenerAutoActualizacion() {
-      clearInterval(autoRefresh);
-    }
-
-    // --- Registrar animal ---
-    document.getElementById("animalForm").addEventListener("submit", async (e) => {
+    document.getElementById("animalForm").onsubmit = async e=>{
       e.preventDefault();
-      const formData = new FormData();
-      formData.append("nombre", document.getElementById("nombre").value);
-      formData.append("especie", document.getElementById("especie").value);
-      formData.append("estado", document.getElementById("estado").value);
-      formData.append("foto", document.getElementById("foto").files[0]);
+      const formData=new FormData(e.target);
+      const res=await fetch("/api/animals/",{method:"POST",body:formData});
+      if(res.ok){mostrarInicio();e.target.reset();}else mostrarMensaje("Error al registrar el animal");
+    };
 
-      const res = await fetch("/api/animals/", { method: "POST", body: formData });
-      if (res.ok) {
-        mostrarInicio();
-        document.getElementById("animalForm").reset();
-      } else {
-        mostrarMensaje("Error al registrar el animal");
-      }
-    });
-
-    // --- Inicializar ---
-    mostrarInicio(); // empieza siempre en "Inicio"
-
-    function mostrarMensaje(mensaje, tipo = "exito") {
-      const msg = document.createElement("div");
-      msg.textContent = mensaje;
-      msg.style.position = "fixed";
-      msg.style.top = "20px";
-      msg.style.left = "50%";
-      msg.style.transform = "translateX(-50%)";
-      msg.style.backgroundColor = tipo === "error" ? "#e74c3c" : "orange";
-      msg.style.color = "white";
-      msg.style.padding = "12px 25px";
-      msg.style.borderRadius = "10px";
-      msg.style.fontWeight = "bold";
-      msg.style.fontSize = "1.1em";
-      msg.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
-      msg.style.zIndex = "9999";
-      msg.style.transition = "opacity 0.5s ease";
-      document.body.appendChild(msg);
-      setTimeout(() => {
-        msg.style.opacity = "0";
-        setTimeout(() => msg.remove(), 500);
-      }, 3500);
-    }
-
-    function contactarUsuario(email) {
-      mostrarMensaje(`Podés contactar al usuario en: ${email}`);
-    }
-    
-    const currentPage = window.location.pathname;
-    document.querySelectorAll(".toolbar button").forEach(btn => {
-      if (btn.textContent.includes("Registrar animal") && currentPage.includes("registrar")) {
-        btn.classList.add("active");
-      } else if (btn.onclick && currentPage.includes(btn.textContent.toLowerCase())) {
-        btn.classList.add("active");
-      }
-    });
-
-    // Solicitar adopción
-    document.addEventListener("click", async (e) => {
-      if (e.target.matches(".btn-principal") && e.target.textContent.includes("Solicitar adopción")) {
-        const animalId = e.target.getAttribute("data-id");
-        const userId = localStorage.getItem("user_id");
-        if (!userId) {
-          mostrarMensaje("Debes iniciar sesión para enviar una solicitud", "error");
-          return;
-        }
-        
-        const res = await fetch("http://127.0.0.1:5000/api/adopciones/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: userId, animal_id: animalId })
-        });
-
-        const data = await res.json();
-        console.log("Respuesta adopción:", data);
-        
-        if (res.ok && !data.error) {
-          mostrarMensaje("Solicitud de adopción enviada con éxito 🧡");
-        } else {
-          mostrarMensaje(data.error || "Ya solicitaste este animal ⚠️");
-        }
-      }
-    });
-
-    // Ofrecer transito
-    document.addEventListener("click", async (e) => {
-      if (e.target.matches(".btn-principal") && e.target.textContent.includes("Ofrecer tránsito")) {
-        const animalId = e.target.getAttribute("data-id");
-        const userId = localStorage.getItem("user_id");
-
-        const direccion = prompt("Ingresá tu dirección para el tránsito:");
-        const duracion = prompt("¿Cuántos días podés ofrecer tránsito?");
-        if (!direccion || !duracion) {
-          alert("Debés completar todos los datos.");
-          return;
-        }
-
-        const res = await fetch("http://127.0.0.1:5000/api/transitos/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            animal_id: animalId,
-            user_id: userId,
-            direccion,
-            duracion
-          }),
-        });
-        const data = await res.json();
-        alert(data.mensaje || "Solicitud enviada correctamente.");
-      }
-    });
+    function mostrarMensaje(m,t="exito"){const msg=document.createElement("div");msg.textContent=m;msg.style.position="fixed";msg.style.top="20px";msg.style.left="50%";msg.style.transform="translateX(-50%)";msg.style.backgroundColor=t==="error"?"#e74c3c":"orange";msg.style.color="white";msg.style.padding="12px 25px";msg.style.borderRadius="10px";msg.style.fontWeight="bold";msg.style.fontSize="1.1em";msg.style.zIndex="9999";document.body.appendChild(msg);setTimeout(()=>msg.remove(),3000);}
+    function contactarUsuario(email){mostrarMensaje(`Podés contactar al usuario en: ${email}`);}
+    mostrarInicio();
   </script>
 </body>
 </html>

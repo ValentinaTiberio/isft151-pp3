@@ -37,3 +37,21 @@ def crear_transito():
     data = request.get_json()
     t = transito_service.crear_transito(data)
     return jsonify({"mensaje": "Tránsito creado correctamente", "id": t.id})
+
+@transito_bp.route('/<int:id>', methods=['PUT'])
+def actualizar_estado(id):
+    data = request.get_json()
+    nuevo_estado = data.get("estado")
+
+    from backend.app.models.transito_model import Transito
+    t = Transito.query.get(id)
+
+    if not t:
+        return jsonify({"error": "Transito no encontrado"}), 404
+
+    t.estado = nuevo_estado
+    from backend.app.db_config import db
+    db.session.commit()
+
+    return jsonify({"mensaje": f"Estado actualizado a {nuevo_estado}"}), 200
+

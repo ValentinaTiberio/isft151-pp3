@@ -151,7 +151,7 @@
         <td>${s.usuario}</td>
         <td>${s.fecha}</td>
         <td>${s.tipo}</td>
-        <td class="${s.estado === 'Aprobada' ? 'aprobada' : s.estado === 'Rechazada' ? 'rechazada' : 'pendiente'}">${s.estado}</td>
+        <td class="estado ${s.estado}">${s.estado}</td>
         <td>${s.observaciones}</td>
         <td>
           <button class="btn-aceptar" onclick="cambiarEstado('${s.tipo.toLowerCase()}', ${s.id}, 'Aprobada')">✅ Aprobar</button>

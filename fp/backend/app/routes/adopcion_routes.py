@@ -19,7 +19,7 @@ def listar():
         "id": a.id,
         "animal_id": a.animal_id,
         "animal_nombre": a.animal.nombre if a.animal else None,
-        "usuario_nombre": a.usuario.username if a.usuario else None,  # ← agregado
+        "usuario_nombre": a.user.username if a.user else None,
         "estado": a.estado,
         "fecha_solicitud": a.fecha_solicitud.strftime("%Y-%m-%d %H:%M")
     } for a in adopciones])

@@ -284,64 +284,7 @@
           ` : ""}
         </div>
       `).join("");
-
-      // Agregar eventos a los botones de solicitud
-      document.querySelectorAll(".solicitar").forEach(btn => {
-        btn.addEventListener("click", async (e) => {
-          const animalId = e.target.dataset.id;
-          const userId = localStorage.getItem("user_id");
-
-          if (!userId) {
-            mostrarMensaje("Debes iniciar sesión para enviar una solicitud");
-            return;
-          }
-
-          const res = await fetch("http://127.0.0.1:5000/api/adopciones/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ animal_id: animalId, user_id: userId })
-          });
-
-          const data = await res.json();
-
-          if (res.ok && !data.error) {
-            mostrarMensaje("Solicitud de adopción enviada con éxito");
-          } else {
-            mostrarMensaje(data.error || "Ya solicitaste este animal ⚠️");
-          }
-        });
-      });
-
-      document.addEventListener("click", async (e) => {
-        if (e.target.matches(".btn-principal") && e.target.textContent.includes("Ofrecer tránsito")) {
-          const animalId = e.target.getAttribute("data-id");
-          const userId = localStorage.getItem("user_id");
-
-          const direccion = prompt("Ingresá tu dirección para el tránsito:");
-          const duracion = prompt("¿Cuántos días podés ofrecer tránsito?");
-
-          if (!direccion || !duracion) {
-            alert("Debés completar todos los datos.");
-            return;
-          }
-
-          const res = await fetch("http://127.0.0.1:5000/api/transitos/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              animal_id: animalId,
-              user_id: userId,
-              direccion,
-              duracion
-            }),
-          });
-
-          const data = await res.json();
-          alert(data.mensaje || "Solicitud enviada correctamente.");
-        }
-      });
     }
-
 
     // --- Mostrar inicio ---
     function mostrarInicio() {
@@ -440,6 +383,61 @@
         btn.classList.add("active");
       } else if (btn.onclick && currentPage.includes(btn.textContent.toLowerCase())) {
         btn.classList.add("active");
+      }
+    });
+
+    // Solicitar adopción
+    document.addEventListener("click", async (e) => {
+      if (e.target.matches(".btn-principal") && e.target.textContent.includes("Solicitar adopción")) {
+        const animalId = e.target.getAttribute("data-id");
+        const userId = localStorage.getItem("user_id");
+        if (!userId) {
+          mostrarMensaje("Debes iniciar sesión para enviar una solicitud", "error");
+          return;
+        }
+        
+        const res = await fetch("http://127.0.0.1:5000/api/adopciones/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: userId, animal_id: animalId })
+        });
+
+        const data = await res.json();
+        console.log("Respuesta adopción:", data);
+        
+        if (res.ok && !data.error) {
+          mostrarMensaje("Solicitud de adopción enviada con éxito 🧡");
+        } else {
+          mostrarMensaje(data.error || "Ya solicitaste este animal ⚠️");
+        }
+      }
+    });
+
+    // Ofrecer transito
+    document.addEventListener("click", async (e) => {
+      if (e.target.matches(".btn-principal") && e.target.textContent.includes("Ofrecer tránsito")) {
+        const animalId = e.target.getAttribute("data-id");
+        const userId = localStorage.getItem("user_id");
+
+        const direccion = prompt("Ingresá tu dirección para el tránsito:");
+        const duracion = prompt("¿Cuántos días podés ofrecer tránsito?");
+        if (!direccion || !duracion) {
+          alert("Debés completar todos los datos.");
+          return;
+        }
+
+        const res = await fetch("http://127.0.0.1:5000/api/transitos/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            animal_id: animalId,
+            user_id: userId,
+            direccion,
+            duracion
+          }),
+        });
+        const data = await res.json();
+        alert(data.mensaje || "Solicitud enviada correctamente.");
       }
     });
   </script>
